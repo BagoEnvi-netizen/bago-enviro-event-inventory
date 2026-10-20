@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<title>Tobago Event Inventory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@80..100,500..800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+</head>
+<body>
+<style>
+/* Layout: header with live counts → tab bar (one tab per record sheet) → filterable table; records open in a side editor grouped by priority */
+:root{
+  --bg:#eceff3; --panel:#ffffff; --ink:#17202b; --muted:#56616e; --line:#d3d9e0; --soft:#e4e8ee;
+  --accent:#23395b; --accent-ink:#ffffff; --band:#1c2733; --band-ink:#e8edf2; --band-muted:#a9b6c4; --signal:#e8a33d;
+  --p1:#2e7d5b; --p2:#3c6fa8; --p3:#7c8a92;
+  --ok:#2e7d5b; --warn:#a35f00; --crit:#b3402e; --ex:#8a6d1f;
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#12171d; --panel:#1a222b; --ink:#e4e9ee; --muted:#9aa7b4; --line:#2c3743; --soft:#212b35;
+  --accent:#8fb0dd; --accent-ink:#0f141a; --band:#0b1015; --band-ink:#e4e9ee; --band-muted:#8d9aa8; --signal:#e8a33d; --p1:#62c494; --p2:#7fa9e0; --p3:#93a3ab;
+  --ok:#62c494; --warn:#e3a94e; --crit:#ec7d66; --ex:#d8bb6a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#12171d; --panel:#1a222b; --ink:#e4e9ee; --muted:#9aa7b4; --line:#2c3743; --soft:#212b35;
+  --accent:#8fb0dd; --accent-ink:#0f141a; --band:#0b1015; --band-ink:#e4e9ee; --band-muted:#8d9aa8; --signal:#e8a33d; --p1:#62c494; --p2:#7fa9e0; --p3:#93a3ab;
+  --ok:#62c494; --warn:#e3a94e; --crit:#ec7d66; --ex:#d8bb6a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--f-body)}
+.wrap{max-width:1320px;margin:0 auto;padding-inline:20px;padding-block:24px 64px;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:flex-end}
+.eyebrow{font:500 11px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+h1{font:750 clamp(26px,4vw,36px)/1.05 var(--f-display);font-stretch:85%;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h2{font:700 18px var(--f-display);font-stretch:90%;margin:0 0 8px;text-wrap:balance}
+.sub{color:var(--muted);max-width:70ch;margin:8px 0 0}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:600 13px var(--f-body);border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:8px 14px;border-radius:6px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+a.btn{text-decoration:none;display:inline-block}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:var(--crit);border-color:var(--crit)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,tr[tabindex]:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.stat{background:var(--panel);padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.stat .n{font:700 26px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.stat .l{font-size:12px;color:var(--muted)}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto}
+.tab{font:600 14px var(--f-body);background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);padding:10px 12px;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab .cnt{font:500 11px var(--f-mono);color:var(--muted)}
+.pdot{width:8px;height:8px;border-radius:50%;flex:none;display:inline-block}
+.p1{background:var(--p1)} .p2{background:var(--p2)} .p3{background:var(--p3)}
+.ptag{display:inline-flex;align-items:center;gap:6px;font:600 11px var(--f-mono);text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.panelhead{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.panelhead .meta{max-width:80ch;color:var(--muted);font-size:13px;min-width:0}
+.panelhead .meta b{color:var(--ink)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.filters input[type=search],.filters select{font:13px var(--f-body);padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink)}
+.filters input[type=search]{flex:1 1 220px;min-width:0}
+.chk{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.count{font:500 12px var(--f-mono);color:var(--muted);margin-left:auto}
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;min-width:760px}
+th{font:600 11px var(--f-mono);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);background:var(--soft);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.row{cursor:pointer} tr.row:hover td{background:var(--soft)}
+.mono{font:500 12.5px var(--f-mono)}
+.muted{color:var(--muted)}
+.exb{font:600 10px var(--f-mono);color:var(--ex);border:1px solid var(--ex);border-radius:3px;padding:0 4px;margin-left:6px;vertical-align:1px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;white-space:nowrap}
+.bar{height:6px;border-radius:3px;background:var(--soft);overflow:hidden;width:70px;display:inline-block;vertical-align:middle;margin-right:6px}
+.bar span{display:block;height:100%;background:var(--p1)}
+.empty{padding:36px 20px;text-align:center;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:16px;min-width:0}
+.qa li{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
+.qa ul{list-style:none;margin:0;padding:0}
+.qa .n{font:700 14px var(--f-mono);font-variant-numeric:tabular-nums}
+.qa .bad{color:var(--crit)} .qa .good{color:var(--ok)}
+.qa .ids{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.idbtn{font:500 11px var(--f-mono);border:1px solid var(--line);background:none;color:var(--accent);border-radius:3px;padding:1px 5px;cursor:pointer}
+.matrix td.num{text-align:center;font:500 13px var(--f-mono);font-variant-numeric:tabular-nums}
+.matrix td.z{color:var(--line)}
+.matrix td:first-child{min-width:170px}
+.subtabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.subtab{font:600 13px var(--f-body);border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:6px 12px;border-radius:999px;cursor:pointer}
+.subtab[aria-pressed="true"]{border-color:var(--accent);color:var(--ink);background:var(--soft)}
+.note{font-size:13px;color:var(--muted);max-width:80ch}
+.banner{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--muted)}
+.banner.warn{border-color:var(--warn);color:var(--ink)}
+/* editor */
+.scrim{position:fixed;inset:0;background:rgba(10,20,26,.45);z-index:20}
+.editor{position:fixed;top:0;right:0;bottom:0;width:min(720px,100%);background:var(--panel);z-index:21;display:flex;flex-direction:column;border-left:1px solid var(--line);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.edhead{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.edhead h2{margin:0}
+.edbody{overflow-y:auto;padding:12px 20px 20px;flex:1;display:flex;flex-direction:column;gap:12px}
+.edfoot{padding:12px 20px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.msg{font-size:12.5px;color:var(--muted)} .msg.err{color:var(--crit)} .msg.ok{color:var(--ok)}
+details.grp{border:1px solid var(--line);border-radius:8px}
+details.grp>summary{list-style:none;cursor:pointer;padding:10px 14px;display:flex;align-items:center;gap:10px;font:600 14px var(--f-body)}
+details.grp>summary::-webkit-details-marker{display:none}
+details.grp>summary .hint{font:400 12px var(--f-body);color:var(--muted);margin-left:auto}
+details.grp[open]>summary{border-bottom:1px solid var(--line)}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px 16px;padding:14px}
+.fld{display:flex;flex-direction:column;gap:4px;min-width:0}
+.fld.wide{grid-column:1/-1}
+.fld label{font:600 13px var(--f-body);display:flex;gap:6px;align-items:baseline;flex-wrap:wrap}
+.fld label .key{font:500 10.5px var(--f-mono);color:var(--muted)}
+.fld label .req{color:var(--crit);font-weight:700}
+.fld input,.fld select,.fld textarea{font:14px var(--f-body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 9px;width:100%;min-width:0}
+.fld textarea{min-height:64px;resize:vertical}
+.fld input[readonly]{background:var(--soft);color:var(--muted)}
+.fld .help{font-size:12px;color:var(--muted)}
+.fld .feeds{font-size:11.5px;color:var(--accent)}
+.fld.invalid input,.fld.invalid select,.fld.invalid textarea{border-color:var(--crit)}
+.srclist{max-height:220px;overflow-y:auto;border:1px solid var(--line);border-radius:6px;padding:6px 10px;background:var(--bg)}
+.srclist label{display:flex;gap:8px;font:400 13px var(--f-body);padding:3px 0;align-items:flex-start}
+.srclist input[type=checkbox]{width:auto;flex:none;margin-top:3px}
+.extlink{color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:2px;white-space:nowrap}
+.urlrow{display:flex;gap:8px;align-items:center}
+.urlrow input{flex:1}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--muted)}
+.legend span{display:inline-flex;gap:6px;align-items:center}
+@media (max-width:560px){.wrap{padding-inline:16px}.count{margin-left:0;width:100%}.edhead,.edbody,.edfoot{padding-inline:16px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.ladder{display:grid;gap:6px;margin:14px 0 0;font-size:13px}.ladder div{display:grid;grid-template-columns:130px 1fr;gap:10px}.ladder dt{font-weight:600}.ladder dd{margin:0;color:var(--muted)}
+.callout{border-left:3px solid var(--accent);background:var(--soft);padding:10px 14px;margin:0 0 12px;font-size:13.5px;border-radius:4px}
+.okc{color:var(--p1);font-weight:600}.fclist{line-height:2}
+@media (max-width:560px){.ladder div{grid-template-columns:1fr;gap:0}}
+.fld[hidden]{display:none}
+.linked{font-size:13px;line-height:2}
+.sgroups{display:flex;flex-direction:column;gap:12px}
+.sgroup{padding:12px}
+.sghead{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline;margin-bottom:8px}
+.sgmeta{font-size:12.5px;color:var(--muted);flex-basis:100%}
+/* evidence chart: events split by the most reliable linked source */
+.relrows{display:flex;flex-direction:column;gap:2px;margin-top:4px}
+.relrow{display:grid;grid-template-columns:minmax(120px,200px) 1fr 44px;gap:12px;align-items:center;padding:4px 0}
+.relrow .lab{font-size:13px;min-width:0;overflow-wrap:anywhere}
+.relrow .tot{font:500 12px var(--f-mono);color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+.relbar{height:20px}
+.relfill{display:flex;height:100%;border-radius:4px;overflow:hidden;min-width:4px}
+.relfill span{display:flex;align-items:center;justify-content:center;font:500 10.5px var(--f-mono);min-width:0;border-right:1px solid var(--panel);color:var(--ink);font-variant-numeric:tabular-nums}
+.relfill span:last-child{border-right:0}
+.rk0{background:var(--accent);color:var(--accent-ink)!important}
+.rk1{background:color-mix(in srgb,var(--accent) 72%,var(--panel));color:var(--accent-ink)!important}
+.rk2{background:color-mix(in srgb,var(--accent) 45%,var(--panel))}
+.rk3{background:color-mix(in srgb,var(--warn) 60%,var(--panel))}
+.rk4{background:color-mix(in srgb,var(--warn) 28%,var(--panel))}
+.rk5{background:repeating-linear-gradient(45deg,var(--line) 0 4px,var(--soft) 4px 8px)}
+.rk6{background:color-mix(in srgb,var(--crit) 45%,var(--panel))}
+.relkey{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted);margin-top:12px}
+.relkey span{display:inline-flex;gap:6px;align-items:center}
+.relkey i{width:14px;height:10px;border-radius:2px;display:inline-block}
+.relweak{margin-top:12px;font-size:13px}
+@media (max-width:560px){.relrow{grid-template-columns:1fr 40px;gap:4px 10px}.relrow .lab{grid-column:1/-1}}
+
+/* ---- Event Inventory identity: an operations log, deliberately unlike the Commons ---- */
+header{background:var(--band);color:var(--band-ink);padding:20px 22px;border-radius:3px;align-items:center}
+header h1{color:var(--band-ink)}
+header .eyebrow{color:var(--signal)}
+header .sub{color:var(--band-muted)}
+header .sub b{color:var(--band-ink)}
+header .btn{background:transparent;color:var(--band-ink);border-color:#46566a}
+header .btn:hover{border-color:var(--signal)}
+header .btn.primary{background:var(--signal);border-color:var(--signal);color:#1c2733}
+.btn{border-radius:2px;text-transform:uppercase;letter-spacing:.05em;font-size:12px;padding:8px 14px}
+.card,.tablebox,.strip,.banner,details.grp,.srclist{border-radius:3px}
+.fld input,.fld select,.fld textarea,.filters input[type=search],.filters select{border-radius:2px}
+.subtab{border-radius:2px}
+.idbtn,.exb{border-radius:2px}
+.tabs{gap:4px;border-bottom:0;flex-wrap:wrap;overflow-x:visible}
+.tab{background:var(--panel);border:1px solid var(--line);border-radius:2px;padding:8px 12px;font-size:13px}
+.tab[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tab[aria-selected="true"] .cnt{color:var(--accent-ink);opacity:.8}
+th{background:var(--soft)}
+.callout{border-left-color:var(--signal)}
+.rk0{background:#1f4e79!important;color:#fff!important}
+.rk1{background:#3f73a8!important;color:#fff!important}
+.rk2{background:#9ab8d8!important}
+.phase-note{font-size:12.5px;color:var(--muted)}
+/* Admin tab */
+.flag{color:var(--crit);font-weight:600}
+.flagline{color:var(--crit);margin-top:4px}
+.cntb{font:600 12px var(--f-mono);background:var(--signal);color:#1c2733;padding:1px 7px;border-radius:2px;vertical-align:3px}
+.tab .cnt.alert{background:var(--signal);color:#1c2733!important;opacity:1;padding:0 5px;border-radius:2px}
+.roletag{font:600 11px var(--f-mono);text-transform:uppercase;letter-spacing:.04em;border:1px solid var(--line);padding:1px 6px;border-radius:2px}
+.roletag.r-admin{border-color:var(--signal)}
+ul.plain{list-style:none;margin:0;padding:0}ul.plain li{padding:7px 0;border-bottom:1px solid var(--line)}ul.plain li:last-child{border-bottom:0}
+.access{max-width:720px}
+.grid2 .tablebox table{min-width:0}
+</style>
+
+<div class="wrap">
+  <header>
+    <div style="min-width:0">
+      <div class="eyebrow">Climate Unit · Tier 1 CRVA · Draft 0.6</div>
+      <h1>Tobago Event Inventory</h1>
+      <p class="sub">One shared record of hazard events, their impacts and losses in Tobago. Every field is marked by priority: fill <b>Essential</b> first, <b>Recommended</b> when known, and the <b>Loss &amp; damage extension</b> for significant events only.</p>
+    </div>
+    <div class="actions">
+      <button class="btn" id="csvBtn" hidden>Download this tab (CSV)</button>
+      <button class="btn" id="xlsBtn" hidden>Download all (Excel)</button>
+      <button class="btn primary" id="addBtn" hidden>Add record</button>
+    </div>
+  </header>
+
+  <div class="banner" id="connBanner">Loading the inventory…</div>
+  <section class="strip" id="strip" aria-label="Summary"></section>
+  <nav class="tabs" role="tablist" id="tabs"></nav>
+  <main id="main"></main>
+  <div class="legend">
+    <span><span class="pdot p1"></span>1 Essential (Tier 1): every record</span>
+    <span><span class="pdot p2"></span>2 Recommended: when known</span>
+    <span><span class="pdot p3"></span>3 Loss &amp; damage extension: significant events only</span>
+    <span><span class="exb" style="margin:0">EX</span> fictional training example</span>
+  </div>
+</div>
+<div id="edroot"></div>
+
+<script>
+const S = <?!= schemaJson ?>;
+let GIS_LAST = null, PHASE2 = false, ME = { name: "", email: "", role: "" }, SETTINGS = {}, SHEET = { id: "", gids: {}, names: {} };
+const COLS = Object.fromEntries(S.cols.map(c => [c.key, c]));
+const PNAME = {"1":"Essential (Tier 1)","2":"Recommended","3":"Loss & damage extension"};
+const PHINT = {"1":"Fill for every record","2":"Fill when the information is known","3":"Significant events only (see the significant field on Events; interim rule until I4 is settled); not needed for Tier 1"};
+const DETAIL = S.cols.filter(c => c.detail).map(c => c.key);
+const TABS_ALL = [["help","How-to guide"],["overview","Overview"],["events","Events"],["sources","Sources"],["field_checks","Field checks"],["hazardous_events","Hazardous events"],["met_ids","Met Service IDs"],["slow_onset","Slow-onset"],["detail","Loss & damage detail"],["guide","How it feeds the CRVA"]];
+const PHASE2_TABS = ["met_ids","slow_onset","detail"];
+let TABS = TABS_ALL.filter(t => !PHASE2_TABS.includes(t[0]));
+const data = Object.fromEntries(S.cols.map(c => [c.key, []]));
+const loaded = new Set();
+let db = null, downloads = null, canWrite = true, tab = "overview", detailKey = "human_effects", showEx = true;
+const filt = {q:"", type:"", parish:"", ver:"", sg:"list"};
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const lab = k => k.replace(/_/g, " ").replace(/^./, c => c.toUpperCase()).replace(/\bttd\b/i,"TT$").replace(/\bid\b/i,"ID").replace(/\bm2\b/,"m²").replace(/\bm3\b/,"m³");
+const CONFIRMED = o => o === "Confirmed" || o === "Confirmed with corrections";
+const SARG = "Sargassum influx", IMPACT_KEYS = ["people_affected","livelihoods_disrupted","facilities_affected","damage_desc","est_cost_ttd","est_loss_ttd"];
+const HE_TRIG = ["Heavy rainfall","Tropical storm / hurricane","Swell / high waves"];
+const IMPACT_ALL = ["people_affected","people_displaced","people_relocated","livelihoods_disrupted","injuries","deaths","missing","disaggregation","buildings_damaged","buildings_destroyed","dwellings_damaged","dwellings_destroyed","education_facilities_damaged","health_facilities_damaged","roads_damaged_m","crops_ha","livestock_lost","boats_damaged","heritage_damaged","facilities_affected","utilities_affected","damage_desc","est_cost_ttd","est_loss_ttd","closure_hours"];
+const HUMAP = {"Directly affected":"people_affected","Evacuated":"people_displaced","Relocated":"people_relocated","Deaths":"deaths","Missing":"missing","Injured or ill":"injuries","Livelihood disrupted (households)":"livelihoods_disrupted"};
+const COASTAL = ["Coastal overtopping / flooding","Coastal erosion episode","Sargassum influx","Storm surge flooding"];
+const live = r => !isEx(r) && !["Duplicate","Rejected"].includes(r.verification_status);
+const FC_NEEDED = ["event_id","visit_date","team","easting","northing","photo_ids"];
+const isEx = r => r.is_example === "Y" || /(^|-)EX-|^EX-/.test(r._id || "");
+const rowsOf = k => data[k].filter(r => showEx || !isEx(r));
+const safeUrl = u => { try { const x = new URL(String(u || "").trim()); return (x.protocol === "https:" || x.protocol === "http:") ? x.href : ""; } catch (e) { return ""; } };
+const linkHtml = (u, txt) => { const h = safeUrl(u); return h ? `<a class="extlink" href="${esc(h)}" target="_blank" rel="noopener noreferrer" data-stop="1">${esc(txt || "Open link")} ↗</a>` : ""; };
+const blank = v => v === undefined || v === null || v === "";
+try { const t = localStorage.getItem("evi-tab"); if (t && TABS.some(x => x[0] === t)) tab = t; const e = localStorage.getItem("evi-ex"); if (e) showEx = e === "1"; } catch (e) {}
+
+/* ---------- helpers ---------- */
+function reqMissing(c, r) { return c.fields.filter(f => f.r && f.t !== "auto" && blank(r[f.k])).map(f => f.k); }
+function sigOf(r) { if (!r) return ""; const why = []; if (Number(r.deaths) > 0) why.push("death"); if (Number(r.buildings_destroyed) > 0) why.push("building destroyed"); if (Number(r.closure_hours) > 24) why.push("road closed > 24 h"); if ((data.funding || []).some(x => (x.record_id === r._id || x.event_id === r._id) && x.funder_type === "THA")) why.push("THA spending"); return why.length ? "Yes (" + why.join(", ") + ")" : "No"; }
+function climateOf(trigger) { return blank(trigger) ? "" : (S.tmap[trigger] || "Unclear"); }
+function idYear(r) { const d = (r && (r.date_start || r.visit_date || r.current_date)) || ""; const m = String(d).match(/^(\d{4})/); return m ? m[1] : String(new Date().getFullYear()); }
+function nextId(c, r) {
+  const y = c.pref.includes("{Y}") ? idYear(r) : "";
+  const pre = c.pref.replace("{Y}", y);
+  let max = 0;
+  for (const r of data[c.key]) { const id = r._id || ""; if (id.startsWith(pre)) { const n = parseInt(id.slice(pre.length), 10); if (n > max) max = n; } }
+  return pre + String(max + 1).padStart(c.pad || 3, "0");
+}
+function idsOf(k) { return new Set(data[k].map(r => r._id)); }
+
+/* ---------- QA ---------- */
+function qa() {
+  const ev = rowsOf("events"), src = idsOf("sources"), evIds = idsOf("events"), heIds = idsOf("hazardous_events"), soIds = idsOf("slow_onset");
+  const C = COLS.events, out = [];
+  const add = (label, ids, note) => out.push({label, ids, note});
+  add("Events missing a required field", ev.filter(r => reqMissing(C, r).length).map(r => r._id));
+  add("Coordinates missing (precision better than parish)", ev.filter(r => r.location_precision && r.location_precision !== "Parish only" && (blank(r.easting) || blank(r.northing))).map(r => r._id));
+  add("Coordinates outside Tobago", ev.filter(r => (!blank(r.easting) && (r.easting < 733000 || r.easting > 776000)) || (!blank(r.northing) && (r.northing < 1231000 || r.northing > 1259000))).map(r => r._id));
+  add("Duplicates without duplicate_of", ev.filter(r => r.verification_status === "Duplicate" && blank(r.duplicate_of)).map(r => r._id));
+  add("Road closures without closure hours", ev.filter(r => (r.event_type === "Road closure" || r.road_closed === "Y") && blank(r.closure_hours)).map(r => r._id));
+  add("Events with no linked source", ev.filter(r => !(r.source_ids || []).length).map(r => r._id));
+  add("Linked source that does not exist", ev.filter(r => (r.source_ids || []).some(s => !src.has(s))).map(r => r._id));
+  const byId = Object.fromEntries(data.events.map(r => [r._id, r]));
+  const kids = ev.filter(r => !blank(r.parent_event_id));
+  add("Cause links: parent_event_id not found", kids.filter(r => r.parent_event_id !== r._id && !evIds.has(r.parent_event_id)).map(r => r._id));
+  add("Cause links: event lists itself as its parent", kids.filter(r => r.parent_event_id === r._id).map(r => r._id));
+  const inLoop = r => { const seen = new Set([r._id]); let cur = byId[r.parent_event_id]; while (cur) { if (seen.has(cur._id)) return cur._id === r._id; seen.add(cur._id); cur = blank(cur.parent_event_id) ? null : byId[cur.parent_event_id]; } return false; };
+  add("Cause links: chain loops back on itself (A caused B caused A)", kids.filter(r => r.parent_event_id !== r._id && inLoop(r)).map(r => r._id));
+  add("Cause links: parent is a Duplicate or Rejected record (link to the original)", kids.filter(r => byId[r.parent_event_id] && ["Duplicate","Rejected"].includes(byId[r.parent_event_id].verification_status)).map(r => r._id));
+  add("Cause links: parent starts after the event it caused", kids.filter(r => { const p = byId[r.parent_event_id]; return p && !blank(p.date_start) && !blank(r.date_start) && String(p.date_start) > String(r.date_start); }).map(r => r._id));
+  add("Cause links: parent has a different hazardous event", kids.filter(r => { const p = byId[r.parent_event_id]; return p && !blank(p.hazardous_event_id) && !blank(r.hazardous_event_id) && p.hazardous_event_id !== r.hazardous_event_id; }).map(r => r._id));
+  add("duplicate_of not found", ev.filter(r => !blank(r.duplicate_of) && (r.duplicate_of === r._id || !evIds.has(r.duplicate_of))).map(r => r._id));
+  add("Hazardous event ID not found", ev.filter(r => !blank(r.hazardous_event_id) && !heIds.has(r.hazardous_event_id)).map(r => r._id));
+  const fcs = rowsOf("field_checks");
+  const confirms = id => data.field_checks.some(x => x.event_id === id && CONFIRMED(x.outcome) && FC_NEEDED.every(k => !blank(x[k])));
+  add("Field-verified events without a confirming field check", ev.filter(r => r.verification_status === "Field-verified" && !confirms(r._id)).map(r => r._id));
+  add("Partner field monitoring without the partner named (origin_agency)", ev.filter(r => r.data_origin === "Partner field monitoring" && blank(r.origin_agency)).map(r => r._id));
+  add("Field checks linked to an event that does not exist", fcs.filter(x => !blank(x.event_id) && !evIds.has(x.event_id)).map(x => x._id), "field_checks");
+  add("Field checks missing team, date, GPS point or photos", fcs.filter(x => FC_NEEDED.some(k => blank(x[k]))).map(x => x._id), "field_checks");
+  add("Field checks without a link to their photos in the Commons", fcs.filter(x => !isEx(x) && blank(x.commons_photos_link)).map(x => x._id), "field_checks");
+  add("Sargassum events without a stoplight flag", ev.filter(r => r.event_type === SARG && blank(r.sargassum_flag)).map(r => r._id));
+  add("Green sargassum events with no impact recorded", ev.filter(r => r.event_type === SARG && r.sargassum_flag === "Green" && IMPACT_KEYS.every(k => blank(r[k]))).map(r => r._id));
+  const evById = Object.fromEntries(data.events.map(r => [r._id, r]));
+  add("Tier 1: records with no impact field filled (if none, explain in damage description)", ev.filter(r => live(r) && r.road_closed !== "Y" && IMPACT_ALL.every(k => blank(r[k]))).map(r => r._id));
+  add("Tier 1: rainfall-, storm- or swell-triggered events with no hazardous event", ev.filter(r => live(r) && HE_TRIG.includes(r.trigger) && blank(r.hazardous_event_id)).map(r => r._id));
+  const huBad = rowsOf("human_effects").filter(x => { const e = evById[x.event_id], fld = HUMAP[x.variable]; if (!e || !fld || blank(e[fld]) || blank(x.count)) return false; const sum = data.human_effects.filter(y => y.event_id === x.event_id && y.variable === x.variable && String(y.as_of_date || "") === String(x.as_of_date || "")).reduce((a, y) => a + (Number(y.count) || 0), 0); return sum > Number(e[fld]); }).map(x => x._id);
+  add("Tier 1: Human effects rows adding up to more than the event total (same variable and date)", huBad, "human_effects");
+  add("Tier 1: damage value (TTD) on Damage & losses exceeding the event's est. cost", ev.filter(r => !isEx(r) && !blank(r.est_cost_ttd) && data.damage_losses.filter(d => d.event_id === r._id && d.value_type === "Damage (repair or replacement)" && (blank(d.currency) || d.currency === "TTD")).reduce((a, d) => a + (Number(d.value_local) || 0), 0) > Number(r.est_cost_ttd)).map(r => r._id));
+  add("Tier 1: coastal events with no site ID or coordinates", ev.filter(r => live(r) && COASTAL.includes(r.event_type) && blank(r.site_id) && blank(r.easting) && blank(r.northing)).map(r => r._id));
+  const cut = new Date(Date.now() - 400 * 864e5).toISOString().slice(0, 10);
+  add("Tier 1: slow-onset indicators whose latest reading is more than 400 days old", rowsOf("slow_onset").filter(x => !isEx(x) && !blank(x.current_date) && String(x.current_date) < cut && !data.slow_onset.some(y => y !== x && y.indicator === x.indicator && y.place === x.place && String(y.current_date || "") > String(x.current_date))).map(x => x._id), "slow_onset");
+  add("For information: event IDs whose year differs from the start date (expected after a date correction; never renumber)", ev.filter(r => !isEx(r) && !blank(r.date_start) && /^EV-\d{4}-/.test(r._id) && r._id.slice(3, 7) !== String(r.date_start).slice(0, 4)).map(r => r._id));
+  add("For information: verified landslide and flood records precise enough for susceptibility training", ev.filter(r => !isEx(r) && ["Desk-verified","Partner-observed","Field-verified"].includes(r.verification_status) && ["GPS / RTK (< 10 m)","Road chainage (< 100 m)"].includes(r.location_precision) && ["Landslide","Rockfall","Debris flow","Flash flood","River flood","Urban / surface-water flood"].includes(r.event_type)).map(r => r._id));
+  const sigEv = ev.filter(r => live(r) && sigOf(r).startsWith("Yes"));
+  add("For information: significant events under the interim rule (death, building destroyed, road closed > 24 h, or THA spending; open question I4)", sigEv.map(r => r._id));
+  add("For information: significant events with no Loss & damage detail rows yet", sigEv.filter(r => !DETAIL.some(k => (data[k] || []).some(x => (x.record_id || x.event_id) === r._id))).map(r => r._id));
+  add("Cost entered without a price year", ev.filter(r => (!blank(r.est_cost_ttd) || !blank(r.est_loss_ttd)) && blank(r.price_year)).map(r => r._id));
+  add("Slow-onset rows missing a baseline or current value", rowsOf("slow_onset").filter(r => blank(r.baseline_value) || blank(r.current_value)).map(r => r._id), "slow_onset");
+  add("Non-economic losses without consent recorded", rowsOf("non_economic").filter(r => r.consent_recorded !== "Y").map(r => r._id), "non_economic");
+  { const sb = Object.fromEntries(data.sources.map(x => [x._id, x]));
+    add("Desk-verified events that do not meet the rule (one record from the mandated agency within its mandate, or two independent sources)", ev.filter(r => r.verification_status === "Desk-verified" && !evidenceOf(r, sb).meets).map(r => r._id));
+    add("Partner field monitoring sources without the partner's record IDs (form, observation or photo numbers)", rowsOf("sources").filter(x => x.source_type === "Partner field monitoring" && blank(x.agency_record_ids)).map(x => x._id), "sources");
+    const geo = rowsOf("sources").filter(x => x.has_geodata === "Y");
+    add("Sources with geodata not yet checked and loaded by the GIS Specialist", geo.filter(x => x.gis_status !== "Checked and loaded to the GeoPackage" && x.gis_status !== "Not usable (explain in notes)").map(x => x._id), "sources");
+    add("For information: sources with geodata not yet linked in the Commons", geo.filter(x => blank(x.geodata_link) && x.source_type !== "WhatsApp or messaging app").map(x => x._id), "sources");
+    add("Events with coordinates but no record of where they came from (coords_from)", ev.filter(r => !isEx(r) && !blank(r.easting) && blank(r.coords_from)).map(r => r._id));
+    add("Events whose coordinates come from a source the GIS Specialist has not loaded yet", ev.filter(r => !blank(r.coords_from) && sb[r.coords_from] && sb[r.coords_from].has_geodata === "Y" && sb[r.coords_from].gis_status !== "Checked and loaded to the GeoPackage").map(r => r._id));
+    add("Sources marked as repeating themselves", rowsOf("sources").filter(x => x.repeats_source_id === x._id).map(x => x._id), "sources");
+    add("Sources marked Original held whose original is not entered as a source", rowsOf("sources").filter(x => !blank(x.repeats_source_id) && x.original_held === "Y" && !sb[x.repeats_source_id]).map(x => x._id), "sources");
+    add("For information: Reported events that already meet the Desk-verified rule", ev.filter(r => live(r) && r.verification_status === "Reported" && evidenceOf(r, sb).meets).map(r => r._id)); }
+  const met = rowsOf("met_ids");
+  add("Met Service IDs linked to a hazardous event that does not exist", met.filter(r => !blank(r.hazardous_event_id) && !heIds.has(r.hazardous_event_id)).map(r => r._id), "met_ids");
+  add("Hazardous events whose Met Service ID differs from the Met Service IDs tab", rowsOf("hazardous_events").filter(h => met.some(r => r.hazardous_event_id === h._id && r.wmo_che_id !== h.wmo_che_id)).map(r => r._id), "hazardous_events");
+  add("For information: Met Service IDs not yet checked against the inventory", met.filter(r => r.match_status === "Not yet checked").map(r => r._id), "met_ids");
+  const recIds = new Set([...evIds, ...soIds, ...heIds]);
+  const orphan = []; for (const k of DETAIL) for (const r of rowsOf(k)) { const rid = r.record_id || r.event_id; if (!blank(rid) && !recIds.has(rid)) orphan.push(k + ":" + r._id); }
+  add("Detail rows linked to a record that does not exist", orphan, "detail");
+  return out;
+}
+
+/* ---------- render: strip & tabs ---------- */
+function renderStrip() {
+  const ev = rowsOf("events"), real = data.events.filter(r => !isEx(r)).length;
+  const fv = ev.filter(r => r.verification_status === "Field-verified").length;
+  const comp = ev.length ? Math.round(ev.filter(r => !reqMissing(COLS.events, r).length).length / ev.length * 100) : 0;
+  const clim = ev.filter(r => climateOf(r.trigger) === "Climate-related").length;
+  const issues = qa().filter(q => !q.label.startsWith("For information")).reduce((a, q) => a + q.ids.length, 0);
+  const cells = [[ev.length, `events shown${showEx ? "" : " (examples hidden)"}`], [real, "real events (not examples)"], [fv, "field-verified"], [comp + "%", "with all required fields"], [clim, "climate-related"], [issues, "QA issues to fix"]];
+  $("#strip").innerHTML = cells.map(([n, l], i) => `<div class="stat"><span class="n" style="${i === 5 && issues ? "color:var(--crit)" : ""}">${esc(n)}</span><span class="l">${esc(l)}</span></div>`).join("");
+}
+function renderTabs() {
+  const cnt = k => k === "detail" ? DETAIL.reduce((a, d) => a + rowsOf(d).length, 0) : k === "admin" ? (ADMIN_ALERTS || "") : (COLS[k] ? rowsOf(k).length : "");
+  $("#tabs").innerHTML = TABS.map(([k, l]) => `<button class="tab" role="tab" aria-selected="${k === tab}" data-k="${k}">${COLS[k] ? `<span class="pdot p${COLS[k].prio}"></span>` : ""}${esc(l)}${cnt(k) !== "" ? `<span class="cnt${k === "admin" ? " alert" : ""}" ${k === "admin" ? `title="Access requests waiting"` : ""}>${cnt(k)}</span>` : ""}</button>`).join("");
+  $("#tabs").querySelectorAll(".tab").forEach(b => b.onclick = () => { tab = b.dataset.k; if (tab === "admin") { ADMIN = null; ACT = null; adminForm = null; adminMsg = null; } try { localStorage.setItem("evi-tab", tab); } catch (e) {} render(); });
+  $("#addBtn").hidden = !canWrite || !(COLS[tab] || tab === "detail") || !db;
+  $("#addBtn").textContent = tab === "detail" ? "Add " + COLS[detailKey].one : COLS[tab] ? "Add " + COLS[tab].one : "Add record";
+  $("#csvBtn").hidden = !downloads || !(COLS[tab] || tab === "detail");
+}
+
+/* ---------- overview ---------- */
+/* ---------- evidence (source reliability) ---------- */
+/* Strongest first. Display order only: changes no score or status. Proposed for team confirmation. */
+const REL_ORDER = ["Unit observation","Partner field data","Official record","Media","Community"];
+const REL_CATS = [...REL_ORDER, "Source not rated", "No source linked"];
+let relBy = "verification_status";
+try { relBy = localStorage.getItem("evi-relby") || relBy; } catch (e) {}
+function bestRel(r, srcById) {
+  const ids = r.source_ids || [];
+  if (!ids.length) return "No source linked";
+  const rels = ids.map(id => (srcById[id] || {}).reliability).filter(Boolean);
+  return REL_ORDER.find(x => rels.includes(x)) || "Source not rated";
+}
+/* ---------- Desk-verified rule: one authoritative record within mandate, or two independent sources ---------- */
+const AUTH_M = "Mandated agency, within its mandate";
+function srcRoot(sid, srcById) {
+  let cur = sid, seen = new Set();
+  while (srcById[cur] && !blank(srcById[cur].repeats_source_id) && !seen.has(cur)) { seen.add(cur); const nx = String(srcById[cur].repeats_source_id).trim(); if (!srcById[nx]) return "orig:" + nx; cur = nx; }
+  return cur;
+}
+function evidenceOf(r, srcById) {
+  const ids = (r.source_ids || []).filter(x => srcById[x]);
+  const auth = ids.filter(x => srcById[x].authority === AUTH_M);
+  const roots = new Set(ids.map(x => srcRoot(x, srcById)));
+  const official = ids.some(x => ["Official record","Unit observation","Partner field data"].includes(srcById[x].reliability) || ["Other official", AUTH_M].includes(srcById[x].authority));
+  const meets = auth.length > 0 || roots.size >= 2;
+  const why = !ids.length ? "no source linked" : auth.length ? "authoritative record " + auth.join(", ") : roots.size >= 2 ? roots.size + " independent sources" : ids.length > 1 ? ids.length + " sources, but one repeats another, so only 1 is independent" : "1 source, not from a mandated agency";
+  return { meets, why, official, independent: roots.size, auth };
+}
+function relCard() {
+  const ev = rowsOf("events"), srcById = Object.fromEntries(data.sources.map(x => [x._id, x]));
+  const best = Object.fromEntries(ev.map(r => [r._id, bestRel(r, srcById)]));
+  const BY = { verification_status: ["Verification status", S.look.verification_status], event_type: ["Event type", S.look.event_type], parish: ["Parish", S.look.parish] };
+  const [, groups] = BY[relBy] || BY.verification_status;
+  const unset = "(not set)";
+  const all0 = [...groups, unset].filter(g => ev.some(r => (r[relBy] || unset) === g));
+  const all = all0, max = Math.max(1, ...all.map(g => ev.filter(r => (r[relBy] || unset) === g).length));
+  const rows = all.map(g => {
+    const rs = ev.filter(r => (r[relBy] || unset) === g), n = rs.length;
+    const segs = REL_CATS.map((c, i) => { const k = rs.filter(r => best[r._id] === c).length; if (!k) return ""; const pc = k / n * 100;
+      return `<span class="rk${i}" style="flex:0 0 ${pc}%" title="${esc(c)}: ${k} of ${n}">${k / max >= 0.06 ? k : ""}</span>`; }).join("");
+    const summary = REL_CATS.map(c => [c, rs.filter(r => best[r._id] === c).length]).filter(x => x[1]).map(([c, k]) => `${c} ${k}`).join(", ");
+    return `<div class="relrow"><div class="lab">${esc(g)}</div><div class="relbar" role="img" aria-label="${esc(g)}: ${esc(summary)}"><div class="relfill" style="width:${n / max * 100}%">${segs}</div></div><div class="tot">${n}</div></div>`;
+  }).join("");
+  const weak = ev.filter(r => r.verification_status === "Desk-verified" && !evidenceOf(r, srcById).meets);
+  const tabs = Object.entries(BY).map(([k, [l]]) => `<button class="subtab" data-relby="${k}" aria-pressed="${k === relBy}">${esc(l)}</button>`).join("");
+  return `<div class="card" style="margin-top:18px"><h2>Evidence behind each event</h2>
+    <p class="note" style="margin:0 0 10px">Bar length is the number of events in the group. Each bar is split by the <b>most reliable source</b> linked to each event, from the <b>reliability</b> field on the Sources tab: blue for the team's, partners' and official records, amber for media and community reports. The number in each segment is its count. Fill reliability on every source so fewer records show as not rated.</p>
+    <div class="subtabs" role="group" aria-label="Group events by">${tabs}</div>
+    ${rows ? `<div class="relrows">${rows}</div>` : `<div class="empty">No events to show yet.</div>`}
+    <div class="relkey">${REL_CATS.map((c, i) => `<span><i class="rk${i}"></i>${esc(c)}</span>`).join("")}</div>
+    ${weak.length ? `<div class="relweak"><b>Check:</b> ${weak.length} Desk-verified ${weak.length === 1 ? "event rests" : "events rest"} without meeting the rule: one record from the mandated agency within its mandate, or two independent sources. <span class="ids" style="display:inline-flex;flex-wrap:wrap;gap:4px">${weak.slice(0, 12).map(r => `<button class="idbtn" data-open="events:${esc(r._id)}">${esc(r._id)}</button>`).join("")}${weak.length > 12 ? `<span class="muted mono">+${weak.length - 12}</span>` : ""}</span></div>` : ""}
+  </div>`;
+}
+function renderOverview() {
+  const ev = rowsOf("events"), vs = S.look.verification_status;
+  const types = S.look.event_type.filter(t => ev.some(r => r.event_type === t));
+  const mtx = types.length ? `<div class="tablebox"><table class="matrix" style="min-width:520px"><thead><tr><th>Event type</th>${vs.map(v => `<th style="text-align:center">${esc(v)}</th>`).join("")}</tr></thead><tbody>${types.map(t => `<tr><td>${esc(t)}</td>${vs.map(v => { const n = ev.filter(r => r.event_type === t && r.verification_status === v).length; return `<td class="num ${n ? "" : "z"}">${n || "·"}</td>`; }).join("")}</tr>`).join("")}</tbody></table></div>` : `<div class="empty">No events yet. Open the Events tab and choose “Add event” to record the first one.</div>`;
+  const q = qa();
+  const qhtml = `<ul>${q.map(x => `<li><div style="min-width:0"><div>${esc(x.label)}</div>${x.ids.length ? `<div class="ids">${x.ids.slice(0, 12).map(id => `<button class="idbtn" data-open="${esc(x.note === "detail" ? id : (x.note || "events") + ":" + id)}">${esc(id.includes(":") ? id.split(":")[1] : id)}</button>`).join("")}${x.ids.length > 12 ? `<span class="muted mono">+${x.ids.length - 12}</span>` : ""}</div>` : ""}</div><span class="n ${x.label.startsWith("For information") ? "" : x.ids.length ? "bad" : "good"}">${x.ids.length}</span></li>`).join("")}</ul>`;
+  const exCount = S.cols.reduce((a, c) => a + data[c.key].filter(isEx).length, 0);
+  $("#main").innerHTML = `<div class="grid2">
+    <div class="card"><h2>Events by type and verification</h2><p class="note" style="margin:0 0 10px">How far the CRVA team has checked each record. Who first collected the data is a separate field, <b>data origin</b>.</p>${mtx}
+    <dl class="ladder">
+      <div><dt>Reported</dt><dd>Not yet confirmed: one source that is not from the mandated agency, or only copies of one.</dd></div>
+      <div><dt>Desk-verified</dt><dd>One record from the mandated agency about a claim within its mandate, or two independent sources. A copy of another source never counts as the second.</dd></div>
+      <div><dt>Partner-observed</dt><dd>A partner collected field data (for example the coastal unit’s dated, located beach photos). The CRVA team has not visited.</dd></div>
+      <div><dt>Field-verified</dt><dd>The CRVA team checked it on site: a field check (form THA-FV-01) with outcome Confirmed, a GPS point and photos. Set automatically by the Field checks tab, and only by it.</dd></div>
+      <div><dt>Duplicate / Rejected</dt><dd>Kept for the record, left out of analysis.</dd></div>
+    </dl></div>
+    <div class="card qa"><h2>QA checks</h2><p class="note" style="margin:0 0 6px">Every count should be 0 before the GIS Specialist loads records into the GeoPackage. Click an ID to fix it.</p>${qhtml}</div>
+  </div>
+  ${PHASE2 ? relCard() : ""}
+  ${PHASE2 ? `<div class="card" style="margin-top:18px"><h2>Export for the GIS Specialist</h2>
+    <p class="note" style="margin:0 0 10px">A CSV of verified events with coordinates (Desk-verified, Partner-observed or Field-verified; training examples left out) is saved every Monday in the <b>GIS exports</b> folder inside the inventory folder, for loading into the GeoPackage. Run QA first: exports carry whatever the records say.</p>
+    <p style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:0">${canWrite ? '<button class="btn" id="gisBtn">Export now</button>' : ""}<span class="msg" id="gisMsg">${GIS_LAST && GIS_LAST.at ? "Last export " + esc(GIS_LAST.at) + ": " + esc(String(GIS_LAST.count)) + " events" + (GIS_LAST.url ? ` · <a class="extlink" href="${esc(GIS_LAST.url)}" target="_blank" rel="noopener noreferrer">open file</a>` : "") : "No export yet."}</span></p></div>` : ""}
+  <div class="card" style="margin-top:18px"><h2>Records by parish</h2><p class="note" style="margin:0 0 10px">Real records only. Use this for the completeness statement that goes with the screening matrix: few records in a parish may mean little reporting, not few events.</p><div class="tablebox"><table style="min-width:360px"><thead><tr><th>Parish</th><th style="text-align:right">Records</th><th style="text-align:right">Verified (desk, partner or field)</th></tr></thead><tbody>${S.look.parish.map(pa => { const rs = data.events.filter(r => !isEx(r) && r.parish === pa); const v = rs.filter(r => ["Desk-verified","Partner-observed","Field-verified"].includes(r.verification_status)).length; return `<tr><td>${esc(pa)}</td><td class="num">${rs.length}</td><td class="num">${v}</td></tr>`; }).join("")}</tbody></table></div></div>
+  <div class="card" style="margin-top:18px"><h2>Training examples</h2><p class="note" style="margin:0 0 10px">${exCount} fictional example records (IDs containing EX-) show how each sheet is filled in. They are not real Tobago events.</p>
+    <div class="actions"><label class="chk"><input type="checkbox" id="exToggle" ${showEx ? "checked" : ""}> Show examples in tables and counts</label>${canWrite && exCount ? `<button class="btn danger" id="delEx">Delete all examples</button><span class="msg" id="delExMsg"></span>` : ""}</div></div>`;
+  $("#exToggle").onchange = e => { showEx = e.target.checked; try { localStorage.setItem("evi-ex", showEx ? "1" : "0"); } catch (er) {} render(); };
+  const de = $("#delEx");
+  if (de) de.onclick = async () => {
+    if (de.dataset.armed !== "1") { de.dataset.armed = "1"; de.textContent = "Click again to delete " + exCount + " examples"; return; }
+    de.disabled = true; $("#delExMsg").textContent = "Deleting…";
+    try { applyData(await gs("deleteExamples")); $("#delExMsg").textContent = "Examples deleted."; }
+    catch (e) { $("#delExMsg").className = "msg err"; $("#delExMsg").textContent = "Could not delete: " + (e.message || e.code); de.disabled = false; }
+  };
+  const gb = $("#gisBtn"); if (gb) gb.onclick = async () => { gb.disabled = true; $("#gisMsg").textContent = "Exporting…"; try { GIS_LAST = await gs("exportGisCsv"); render(); } catch (e) { $("#gisMsg").className = "msg err"; $("#gisMsg").textContent = "Could not export: " + errText(e); gb.disabled = false; } };
+  $("#main").querySelectorAll("[data-relby]").forEach(b => b.onclick = () => { relBy = b.dataset.relby; try { localStorage.setItem("evi-relby", relBy); } catch (e) {} render(); });
+  $("#main").querySelectorAll("[data-open]").forEach(b => b.onclick = () => { const [k, id] = b.dataset.open.split(":"); openEditor(k, id); });
+}
+
+/* ---------- list tables ---------- */
+const COLSPEC = {
+  events: [["event_id","ID"],["event_type","Type"],["date_start","Date"],["parish","Parish"],["community","Community"],["verification_status","Verification"],["_req","Required fields"],["_src","Sources"]],
+  sources: [["source_id","ID"],["source_type","Type"],["title","Title"],["source_date","Date"],["reliability","Reliability"],["_link","Link"],["_used","Used by"]],
+  field_checks: [["visit_id","Visit ID"],["event_id","Event"],["visit_date","Date"],["_ctype","Visit type"],["team","Team"],["outcome","Outcome"],["_evlink","Evidence"]],
+  hazardous_events: [["hazardous_event_id","ID"],["hazard","Hazard"],["event_name","Name"],["date_start","Start"],["climate_related","Climate"],["_impacts","Impact records"]],
+  met_ids: [["wmo_che_id","Met Service ID"],["met_event_name","Name"],["hazard","Hazard"],["date_start","Start"],["match_status","Status"],["hazardous_event_id","Inventory HE"]],
+  slow_onset: [["slow_onset_id","ID"],["hazard","Hazard"],["indicator","Indicator"],["place","Place"],["_change","Baseline → current"],["signpost","Signpost"]],
+};
+function detailSpec(k) { const f = COLS[k].fields.filter(x => x.t !== "auto"); return [["record_id","Record"], ...f.filter(x => !["record_id","event_id","source_id","notes"].includes(x.k)).slice(0, 5).map(x => [x.k, lab(x.k)])]; }
+function cell(k, key, r) {
+  if (key === "_req") { const c = COLS.events, t = c.fields.filter(f => f.r && f.t !== "auto").length, m = reqMissing(c, r).length, p = Math.round((t - m) / t * 100); return `<span class="bar"><span style="width:${p}%;background:${m ? "var(--warn)" : "var(--p1)"}"></span></span><span class="mono">${t - m}/${t}</span>`; }
+  if (key === "_src") { const ids = r.source_ids || []; return ids.length ? `<span class="mono">${ids.map(esc).join("<br>")}</span>` : `<span style="color:var(--crit)">none</span>`; }
+  if (key === "_ctype") return esc(String(r.check_type || "").replace(/ \(.*\)$/, ""));
+  if (key === "_evlink") return linkHtml(r.commons_photos_link, "Photos (Commons)") || linkHtml(r.evidence_link, "Open") || `<span class="muted">${esc(r.photo_ids ? String(r.photo_ids).split(";").length + " photo(s)" : "—")}</span>`;
+  if (key === "outcome") return `<span class="${CONFIRMED(r.outcome) ? "okc" : "muted"}">${esc(r.outcome || "")}</span>`;
+  if (key === "_link") return linkHtml(r.link_url, "Open") || '<span class="muted">—</span>';
+  if (key === "_used") { const ids = data.events.filter(e => (e.source_ids || []).includes(r._id)).map(e => e._id); return ids.length ? `<span class="mono">${ids.map(esc).join("<br>")}</span>` : `<span class="muted">none</span>`; }
+  if (key === "_impacts") return `<span class="mono">${data.events.filter(e => e.hazardous_event_id === r._id).length}</span>`;
+  if (key === "_change") { const ch = (!blank(r.baseline_value) && !blank(r.current_value)) ? (r.current_value - r.baseline_value) : null; return `${esc(r.baseline_value)} → ${esc(r.current_value)} ${esc(r.unit || "")}${ch !== null ? ` <span class="muted mono">(${ch > 0 ? "+" : ""}${+ch.toFixed(2)})</span>` : ""}`; }
+  if (key === "record_id") return `<span class="mono">${esc(r.record_id || r.event_id || "")}</span>`;
+  const v = r[key];
+  if (key === COLS[k].id) return `<span class="mono">${esc(r._id)}</span>${isEx(r) ? '<span class="exb">EX</span>' : ""}`;
+  if (key === "climate_related" && k === "events") return esc(climateOf(r.trigger));
+  return esc(Array.isArray(v) ? v.join(", ") : v);
+}
+function renderList(k) {
+  const c = COLS[k];
+  let rows = rowsOf(k);
+  const q = filt.q.trim().toLowerCase();
+  if (q) rows = rows.filter(r => JSON.stringify(r).toLowerCase().includes(q));
+  if (k === "events") { if (filt.type) rows = rows.filter(r => r.event_type === filt.type); if (filt.parish) rows = rows.filter(r => r.parish === filt.parish); if (filt.ver) rows = rows.filter(r => r.verification_status === filt.ver); }
+  const dkey = { field_checks:"visit_date", events:"date_start", sources:"source_date", hazardous_events:"date_start", met_ids:"date_start", slow_onset:"current_date" }[k];
+  rows.sort((a, b) => dkey ? String(b[dkey] || "").localeCompare(String(a[dkey] || "")) || String(a._id).localeCompare(String(b._id)) : String(a._id).localeCompare(String(b._id)));
+  const spec = COLSPEC[k] || detailSpec(k);
+  const sel = (id, label, list, val) => `<select id="${id}" aria-label="${label}"><option value="">${label}</option>${list.map(v => `<option ${v === val ? "selected" : ""}>${esc(v)}</option>`).join("")}</select>`;
+  const head = `<div class="panelhead"><div class="meta"><span class="ptag"><span class="pdot p${c.prio}"></span>${esc(PNAME[c.prio])}</span><div><b>Feeds in the CRVA:</b> ${esc(c.feeds)}</div><div><b>When to fill:</b> ${esc(c.when)}</div></div></div>`;
+  const fcNote = k === "field_checks" ? `<div class="callout"><b>Only visits by the CRVA team go here.</b> A field check either checks an existing record (Verification visit) or records an event the team saw itself (First-hand observation). Outcome Confirmed sets the event to <b>Field-verified</b>. Field data collected by a partner, such as the coastal unit’s weekly beach photos, is entered as a source on the Sources tab and makes the event <b>Partner-observed</b>, not Field-verified. To start a check from an event, open the event and choose “Record a field check”.</div>` : "";
+  const filters = fcNote + `<div class="filters"><input type="search" id="q" placeholder="Search ${esc(c.name.toLowerCase())}" value="${esc(filt.q)}" aria-label="Search">${k === "events" ? sel("fType", "All types", S.look.event_type, filt.type) + sel("fPar", "All parishes", S.look.parish, filt.parish) + sel("fVer", "All verification levels", S.look.verification_status, filt.ver) : ""}${k === "sources" && PHASE2 ? `<span class="subtabs" role="group" aria-label="View sources" style="margin:0">${[["list","List"],["event","Group by event"],["he","Group by hazardous event"]].map(([v, l]) => `<button class="subtab" data-sg="${v}" aria-pressed="${filt.sg === v}">${l}</button>`).join("")}</span>` : ""}<span class="count">${rows.length} of ${rowsOf(k).length}</span></div>`;
+  let body;
+  if (!loaded.has(k)) body = `<tr><td colspan="${spec.length}" class="empty">${db ? "Loading…" : "The shared inventory is not reachable in this view."}</td></tr>`;
+  else if (!rowsOf(k).length) body = `<tr><td colspan="${spec.length}" class="empty">No ${esc(c.name.toLowerCase())} yet.${canWrite ? ` Choose “Add ${esc(c.one)}” to record the first one.` : ""}</td></tr>`;
+  else if (!rows.length) body = `<tr><td colspan="${spec.length}" class="empty">Nothing matches these filters.</td></tr>`;
+  else body = rows.map(r => `<tr class="row" tabindex="0" data-id="${esc(r._id)}">${spec.map(([key]) => `<td>${cell(k, key, r)}</td>`).join("")}</tr>`).join("");
+  if (k === "sources" && filt.sg !== "list" && loaded.has(k)) return head + filters + sourceGroups(rows);
+  return head + filters + `<div class="tablebox"><table><thead><tr>${spec.map(([, l]) => `<th>${esc(l)}</th>`).join("")}</tr></thead><tbody>${body}</tbody></table></div>`;
+}
+function sourceGroups(rows) {
+  const shown = new Set(rows.map(r => r._id)), sb = Object.fromEntries(data.sources.map(x => [x._id, x]));
+  const evs = [...rowsOf("events")].sort((a, b) => String(b.date_start || "").localeCompare(String(a.date_start || "")));
+  const srcRow = x => `<tr class="row" tabindex="0" data-id="${esc(x._id)}"><td class="mono">${esc(x._id)}${isEx(x) ? '<span class="exb">EX</span>' : ""}</td><td>${esc(x.source_type || "")}</td><td>${esc(x.title || "")}${blank(x.agency_record_ids) ? "" : `<br><span class="mono muted">${esc(x.agency_record_ids)}</span>`}${x.has_geodata === "Y" ? `<br><span class="muted">Geodata: ${esc(x.geodata_type || "type not set")} · ${esc(x.gis_status || "Not yet with the GIS Specialist")}</span>${linkHtml(x.geodata_link, "Commons")}` : ""}</td><td>${esc(x.source_date || "")}</td><td>${esc(x.authority === AUTH_M ? "Mandated agency" : x.reliability || "")}</td><td>${blank(x.repeats_source_id) ? "" : `<span class="muted">repeats</span> <span class="mono">${esc(x.repeats_source_id)}</span>${x.original_held === "N" ? ' <span class="muted">(original not held)</span>' : ""}`}</td></tr>`;
+  const table = list => `<div class="tablebox"><table><thead><tr><th>Source</th><th>Type</th><th>Title</th><th>Date</th><th>Reliability</th><th>Repeats</th></tr></thead><tbody>${list.map(srcRow).join("")}</tbody></table></div>`;
+  const card = (headHtml, list) => `<div class="card sgroup">${headHtml}${table(list)}</div>`;
+  const used = new Set(); let out = "";
+  if (filt.sg === "event") {
+    for (const e of evs) {
+      const list = (e.source_ids || []).filter(x => shown.has(x) && sb[x]).map(x => sb[x]); if (!list.length) continue;
+      list.forEach(x => used.add(x._id)); const ev = evidenceOf(e, sb);
+      out += card(`<div class="sghead"><button class="idbtn" data-gopen="events:${esc(e._id)}">${esc(e._id)}</button> <b>${esc(e.event_type || "")}</b> <span class="muted">${esc([e.date_start, e.parish, e.community].filter(Boolean).join(" · "))}</span><span class="sgmeta">${esc(e.verification_status || "No status")} · ${["Field-verified","Partner-observed"].includes(e.verification_status) && !ev.meets ? "desk rule not needed at this level" : `Desk-verified rule <span style="color:${ev.meets ? "var(--ok)" : "var(--warn)"}">${ev.meets ? "met" : "not met"}</span>`} · ${ev.independent} independent</span></div>`, list);
+    }
+  } else {
+    for (const h of [...rowsOf("hazardous_events")].sort((a, b) => String(b.date_start || "").localeCompare(String(a.date_start || "")))) {
+      const evIds = evs.filter(e => e.hazardous_event_id === h._id);
+      const ids = new Set([...evIds.flatMap(e => e.source_ids || []), ...String(h.source_ids || "").split(";").map(x => x.trim()).filter(Boolean)]);
+      const list = [...ids].filter(x => shown.has(x) && sb[x]).map(x => sb[x]); if (!list.length) continue;
+      list.forEach(x => used.add(x._id));
+      out += card(`<div class="sghead"><button class="idbtn" data-gopen="hazardous_events:${esc(h._id)}">${esc(h._id)}</button> <b>${esc(h.hazard || "")}</b> <span class="muted">${esc([h.event_name, h.date_start].filter(Boolean).join(" · "))}</span><span class="sgmeta">${evIds.length} event${evIds.length === 1 ? "" : "s"}: ${evIds.map(e => `<button class="idbtn" data-gopen="events:${esc(e._id)}">${esc(e._id)}</button>`).join(" ") || "none"}</span></div>`, list);
+    }
+  }
+  const rest = rows.filter(x => !used.has(x._id));
+  if (rest.length) out += card(`<div class="sghead"><b>${filt.sg === "event" ? "Not linked to any event" : "Not linked to any hazardous event"}</b><span class="sgmeta">${filt.sg === "event" ? "Link each one from the event, or with Link to this event on the source." : "Their events have no hazardous_event_id yet, or they are not linked to an event."}</span></div>`, rest);
+  return out ? `<div class="sgroups">${out}</div>` : `<div class="empty">Nothing matches these filters.</div>`;
+}
+function wireList(k) {
+  $("#main").querySelectorAll("[data-sg]").forEach(b => b.onclick = () => { filt.sg = b.dataset.sg; render(); });
+  $("#main").querySelectorAll("[data-gopen]").forEach(b => b.onclick = () => { const [kk, id] = b.dataset.gopen.split(":"); openEditor(kk, id); });
+  const q = $("#q"); if (q) q.oninput = e => { filt.q = e.target.value; const pos = e.target.selectionStart; render(); const n = $("#q"); n.focus(); n.setSelectionRange(pos, pos); };
+  [["fType","type"],["fPar","parish"],["fVer","ver"]].forEach(([id, key]) => { const el = $("#" + id); if (el) el.onchange = e => { filt[key] = e.target.value; render(); }; });
+  $("#main").querySelectorAll("tr.row").forEach(tr => { const go = () => openEditor(k, tr.dataset.id); tr.onclick = e => { if (e.target.closest("[data-stop]")) return; go(); }; tr.onkeydown = e => { if (e.key === "Enter") go(); }; });
+}
+function renderDetail() {
+  const chips = DETAIL.map(k => `<button class="subtab" aria-pressed="${k === detailKey}" data-k="${k}"><span class="pdot p${COLS[k].prio}"></span> ${esc(COLS[k].name)} <span class="mono muted">${rowsOf(k).length}</span></button>`).join("");
+  $("#main").innerHTML = `<p class="note" style="margin:0 0 10px">Detail sheets for significant events. Until open question I4 is settled, an event is significant if it caused any death, destroyed any building, closed a road for more than 24 hours, or drew any THA spending (manual, Option A impact criteria); the <b>significant</b> field on each event shows this. Each row links to an event (or slow-onset record) by its ID.</p><div class="subtabs">${chips}</div>` + renderList(detailKey);
+  $("#main").querySelectorAll(".subtab").forEach(b => b.onclick = () => { detailKey = b.dataset.k; filt.q = ""; render(); });
+  wireList(detailKey);
+}
+function renderGuide() {
+  $("#main").innerHTML = `<div class="card"><h2>Where each part feeds the CRVA</h2><p class="note" style="margin:0 0 12px">The mapped part of a record (where it happened, how big) checks and trains the hazard maps. The table part (when, what, how many, how much) sets the screening scores, tests the impact chains and builds the loss and damage record.</p>
+  <div class="tablebox"><table><thead><tr><th>Sheet</th><th>Priority</th><th>Feeds in the CRVA</th><th>When to fill</th></tr></thead><tbody>${S.cols.map(c => `<tr><td><b>${esc(c.name)}</b></td><td><span class="ptag"><span class="pdot p${c.prio}"></span>${esc(PNAME[c.prio])}</span></td><td>${esc(c.feeds)}</td><td>${esc(c.when)}</td></tr>`).join("")}</tbody></table></div></div>
+  <div class="card" style="margin-top:18px"><h2>Data origin and verification are two different things</h2><p class="note" style="margin:0 0 10px">Every event answers two questions in two fields.</p>
+  <div class="tablebox"><table><thead><tr><th>Question</th><th>Field</th><th>Example: sargassum at Crown Point</th></tr></thead><tbody>
+  <tr><td>Who first saw or measured it?</td><td><span class="mono">data_origin</span>, <span class="mono">origin_agency</span></td><td>Partner field monitoring; coastal unit weekly beach photos</td></tr>
+  <tr><td>How far has the CRVA team checked it?</td><td><span class="mono">verification_status</span></td><td>Partner-observed: the photos are dated and located, but the team has not been</td></tr>
+  <tr><td>Did the CRVA team go and check?</td><td>Field checks tab, <span class="mono">field_check_id</span></td><td>Team visits with the measuring staff or drone, records FC-2026-004 with outcome Confirmed: the event becomes Field-verified</td></tr>
+  </tbody></table></div><p class="note">Partner field data is good evidence and is used in the CRVA. It is kept apart from Field-verified so anyone reading the inventory knows whether the CRVA team checked the site itself.</p></div>
+  <div class="card" style="margin-top:18px"><h2>Event fields and what they feed</h2><div class="tablebox"><table><thead><tr><th>Field</th><th>Priority</th><th>Feeds in the CRVA</th></tr></thead><tbody>${[...COLS.events.fields].sort((a, b) => a.p.localeCompare(b.p)).map(f => `<tr><td><span class="mono">${esc(f.k)}</span>${f.r ? ' <span style="color:var(--crit)">*</span>' : ""}</td><td><span class="ptag"><span class="pdot p${f.p}"></span>${esc(PNAME[f.p])}</span></td><td>${esc(f.f)}</td></tr>`).join("")}</tbody></table></div><p class="note">* required to complete the record.</p></div>`;
+}
+/* ---------- how-to guide tab: points to the guide doc (kept as one editable copy) ---------- */
+const GUIDE_URL = () => safeUrl(SETTINGS.guideUrl) || "#";
+const MANUAL_URL = () => safeUrl(SETTINGS.manualUrl) || "#";
+const QLOG_URL = () => safeUrl(SETTINGS.questionsUrl) || "#";
+function renderHelp() {
+  const rows = [
+    ["I'm new and need to know where to start", "Before you start"],
+    ["I want to enter an event", "Adding an event, step by step"],
+    ["I'm not sure if it's an event or a hazardous event, or which hazard to pick", "Events and hazardous events: the difference"],
+    ["I need to record people affected, damage or costs", "Recording impacts, losses and damage"],
+    ["I need to set or change a record's status", "Setting the verification status"],
+    ["I have a news story or post built from a TEMA report or Met Service bulletin", "Setting the verification status: news stories and posts built from an official record"],
+    ["I need to know which agency is authoritative for a claim", "Setting the verification status: which agency is authoritative for what"],
+    ["Someone sent a report or photos on WhatsApp", "Adding an event, step by step: reports received on WhatsApp"],
+    ["A source came with coordinates, a map or a GIS file", "Adding an event, step by step: sources with maps, coordinates or GIS files"],
+    ...(PHASE2 ? [["I want to see all the sources for one event or one storm", "Checking your work: cross-referencing sources"],
+    ["The Met Service has sent its hazardous event IDs", "Linking causes and triggers: Met Service IDs"]] : []),
+    ["I need to link a cause, such as a storm or a slide that closed a road", "Linking causes and triggers"],
+    ["The QA checks show a problem", "Checking your work"],
+    ["Someone asks what the inventory is based on, or why it's built this way", "Sources and justification (second tab of the guide)"]
+  ];
+  $("#main").innerHTML = `<div class="card"><h2>How-to guide</h2>
+    <p class="note" style="margin:0 0 14px">The guide is a separate document so the team keeps one copy and can edit and comment on it. It opens in a new tab. Find the section you need below, then open the guide.</p>
+    <p style="display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px"><a class="btn primary" href="${esc(GUIDE_URL())}" target="_blank" rel="noopener noreferrer">Open the how-to guide ↗</a><a class="btn" href="${esc(MANUAL_URL())}" target="_blank" rel="noopener noreferrer">Full instruction manual ↗</a><a class="btn" href="${esc(QLOG_URL())}" target="_blank" rel="noopener noreferrer">Open questions ↗</a>${ME.team === "Climate Unit" && safeUrl(SETTINGS.fullQuestionsUrl) ? `<a class="btn" href="${esc(safeUrl(SETTINGS.fullQuestionsUrl))}" target="_blank" rel="noopener noreferrer">Full questions log (Climate Unit) ↗</a>` : ""}</p>
+    <div class="tablebox"><table><thead><tr><th>If you want to…</th><th>Go to this section of the guide</th></tr></thead><tbody>${rows.map(([q, s]) => `<tr><td>${esc(q)}</td><td><b>${esc(s)}</b></td></tr>`).join("")}</tbody></table></div>
+    <p class="note" style="margin:14px 0 0">The inventory is the Climate Unit's own record, kept separately from the Bago Enviro Commons; the Commons links here from its Spaces section. Agency files such as geodata are stored in the Commons, and WhatsApp material in the restricted folder${SETTINGS.restrictedFolderUrl ? ` (<a href="${esc(SETTINGS.restrictedFolderUrl)}" target="_blank" rel="noopener noreferrer">open</a>)` : ""}.</p><p class="note" style="margin:8px 0 0">If the guide and the manual ever disagree, the manual wins. The tab "How it feeds the CRVA" on this page shows what each tab is used for.</p>
+  </div>`;
+}
+function render() {
+  renderStrip(); renderTabs();
+  if (tab === "help") renderHelp();
+  else if (tab === "overview") renderOverview();
+  else if (tab === "guide") renderGuide();
+  else if (tab === "detail") renderDetail();
+  else if (tab === "admin") renderAdmin();
+  else { $("#main").innerHTML = renderList(tab); wireList(tab); }
+}
+
+/* ---------- editor ---------- */
+let edState = null;
+function fieldHtml(c, f, r, isNew) {
+  const v = r[f.k];
+  const id = "f_" + f.k;
+  const isIdField = f.k === c.id;
+  let input;
+  if (f.t === "auto") {
+    const val = f.k === "climate_related" ? climateOf(r.trigger) : f.k === "significant" ? (isNew ? "" : sigOf(r)) : f.k === "change" ? ((!blank(r.baseline_value) && !blank(r.current_value)) ? +(r.current_value - r.baseline_value).toFixed(3) : "") : (v ?? "");
+    input = `<input id="${id}" readonly value="${esc(val)}">`;
+  } else if (f.t === "list") {
+    input = `<select id="${id}" ${canWrite ? "" : "disabled"}><option value=""></option>${(S.look[f.l] || []).map(o => `<option ${o === v ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
+  } else if (f.t === "url") {
+    input = `<div class="urlrow"><input id="${id}" type="url" inputmode="url" placeholder="https://" ${canWrite ? "" : "readonly"} value="${esc(v)}"><span id="${id}_open">${linkHtml(v, "Open")}</span></div>`;
+  } else if (f.t === "long") {
+    input = `<textarea id="${id}" ${canWrite ? "" : "readonly"}>${esc(v)}</textarea>`;
+  } else {
+    const type = f.t === "number" ? "number" : f.t === "date" ? "date" : "text";
+    const dl = ["parent_event_id","duplicate_of"].includes(f.k) || (c.key === "field_checks" && f.k === "event_id") ? "dl_events" : f.k === "hazardous_event_id" && c.key !== "hazardous_events" ? "dl_he" : ["record_id","event_id"].includes(f.k) && c.key !== "events" ? "dl_records" : (f.k === "source_id" && c.key !== "sources") || f.k === "repeats_source_id" || f.k === "coords_from" ? "dl_sources" : "";
+    const ro = (!canWrite) || (isIdField && !isNew) || f.k === "record_uuid";
+    const ph = isIdField && isNew ? `placeholder="${c.pref.includes("{Y}") ? esc(c.pref.replace("{Y}", "YYYY")) + "… numbered from the date on save (leave blank)" : esc(nextId(c, r)) + " (leave blank to use)"}"` : "";
+    input = `<input id="${id}" type="${type}" ${type === "number" ? 'step="any"' : ""} ${dl ? `list="${dl}"` : ""} ${ro ? "readonly" : ""} ${ph} value="${esc(f.k === "record_uuid" && blank(v) ? "(created on save)" : v)}">`;
+  }
+  const wide = f.t === "long" || ["title","indicator","location_desc","description"].includes(f.k);
+  return `<div class="fld ${wide ? "wide" : ""}" data-k="${f.k}"><label for="${id}">${esc(lab(f.k))}${f.r ? '<span class="req" title="Required">*</span>' : ""}<span class="key">${esc(f.k)}</span></label>${input}${f.h ? `<span class="help">${esc(f.h)}</span>` : ""}${f.f ? `<span class="feeds">Feeds: ${esc(f.f)}</span>` : ""}</div>`;
+}
+function openEditor(k, id, prefill) {
+  const c = COLS[k]; if (!c) return;
+  const isNew = !id;
+  const r = isNew ? { ...(c.fields.some(f => f.k === "is_example") ? { is_example: "N" } : {}), ...(c.fields.some(f => f.k === "recorded_by") ? { recorded_by: ME.name } : {}), ...(c.fields.some(f => f.k === "recorded_date") ? { recorded_date: new Date().toISOString().slice(0, 10) } : {}), ...(prefill || {}) } : (data[k].find(x => x._id === id) || {});
+  edState = { k, id, isNew };
+  const groups = ["1","2","3"].map(p => {
+    const fs = c.fields.filter(f => f.p === p); if (!fs.length && !(p === "1" && k === "events")) return "";
+    let extra = "";
+    if (p === "1" && k === "events") {
+      const sel = new Set(r.source_ids || []);
+      const srcs = [...data.sources].sort((a, b) => (sel.has(b._id) - sel.has(a._id)) || String(b.source_date || "").localeCompare(String(a.source_date || "")));
+      extra = `<div class="fld wide"><label>Sources<span class="req">*</span><span class="key">source_ids</span></label><div class="linked" id="srcLinked"></div><div class="srclist" id="srcList">${srcs.length ? srcs.map(s => `<label><input type="checkbox" value="${esc(s._id)}" ${sel.has(s._id) ? "checked" : ""} ${canWrite ? "" : "disabled"}><span><span class="mono">${esc(s._id)}</span> ${esc(s.title || "")} <span class="muted">${esc(s.source_date || "")}</span> ${linkHtml(s.link_url, "link")}</span></label>`).join("") : '<span class="muted">No sources yet. Add the source on the Sources tab first.</span>'}</div><span class="help">Every event cites at least one source. Add new sources on the Sources tab.</span><span class="feeds">Feeds: confidence and verification of the record</span></div>`;
+    }
+    if (p === "1" && k === "sources" && !isNew) {
+      const cites = data.events.filter(e => (e.source_ids || []).includes(id)).sort((a, b) => String(a._id).localeCompare(String(b._id)));
+      extra += `<div class="fld wide"><label>Events that cite this source<span class="key">linked events</span></label><div class="linked">${cites.length ? cites.map(e => `<button type="button" class="idbtn" data-ev="${esc(e._id)}">${esc(e._id)}</button> <span class="muted">${esc(e.event_type || "")}${e.date_start ? ", " + esc(e.date_start) : ""}</span>${(() => { const others = (e.source_ids || []).filter(x => x !== id).map(x => data.sources.find(y => y._id === x)).filter(Boolean); return others.length ? `<span class="muted"> · also: </span>${others.map(o => `<button type="button" class="idbtn" data-src="${esc(o._id)}">${esc(o._id)}</button> <span class="muted">${esc(o.authority === AUTH_M ? "mandated agency" : o.reliability || "not rated")}</span>`).join(" ")}` : '<span class="muted"> · only source</span>'; })()}`).join("<br>") : '<span class="muted">No events cite this source yet.</span>'}</div>${canWrite ? `<div class="urlrow" style="margin-top:6px"><input id="linkEv" list="dl_events" placeholder="Event ID, e.g. EV-2027-0001" aria-label="Event to link"><button type="button" class="btn" id="linkEvBtn">Link to this event</button></div>` : ""}<span class="help">Linking here ticks this source on the event. To unlink, open the event and untick it.</span></div>`;
+    }
+    if (p === "1" && k === "sources") {
+      const ph = String(r.attached_photos || "").split(";").map(x => x.trim()).filter(Boolean).map(x => { const [n, id] = x.split("|"); return { n, id }; });
+      extra += isNew ? `<div class="fld wide" id="waBlock" ${r.source_type === WA_TYPE ? "" : "hidden"}><label>WhatsApp photos<span class="key">attached_photos</span></label><span class="callout" style="margin:0">Save the source first. An <b>Attach photos</b> button then appears here, so you can add the photos straight from your phone or computer. The photos go to the restricted folder, which is for Climate Unit members only.</span></div>` : `<div class="fld wide" id="waBlock" ${r.source_type === WA_TYPE ? "" : "hidden"}><label>WhatsApp photos<span class="key">attached_photos</span></label>
+        <div class="linked">${ph.length ? ph.map(x => x.id ? `<a class="extlink" href="https://drive.google.com/file/d/${esc(x.id)}/view" target="_blank" rel="noopener noreferrer">${esc(x.n)}</a>` : esc(x.n)).join("<br>") : '<span class="muted">No photos attached yet.</span>'}</div>
+        ${canWrite ? `<div class="urlrow" style="margin-top:6px"><input id="attachInput" type="file" accept="image/*" multiple aria-label="Choose photos"><button type="button" class="btn" id="attachBtn">Attach photos</button></div>` : ""}
+        <span class="help">Pick the photos from your phone or computer. They are saved in the restricted Climate Unit folder, never the Commons, named with this source's WA reference, and listed here. Up to 10 at a time. Photos are shrunk and their hidden details (such as the phone's location stamp) removed, so take the location from the sender's pin.</span>
+        <span class="help"><b>Climate Unit only.</b> If this fails, ask the folder owner to share the folder with you. Don't rename, move or delete the files: their names are recorded here.${SETTINGS.restrictedFolderUrl ? ` <a class="extlink" href="${esc(safeUrl(SETTINGS.restrictedFolderUrl))}" target="_blank" rel="noopener noreferrer">Open the folder ↗</a>` : ""}</span></div>`;
+    }
+    if (p === "1" && k === "events" && !isNew) {
+      const checks = data.field_checks.filter(x => x.event_id === id).sort((a, b) => String(b.visit_date || "").localeCompare(String(a.visit_date || "")));
+      extra += `<div class="fld wide"><label>Field checks by the CRVA team<span class="key">field_checks</span></label><div class="fclist">${checks.length ? checks.map(x => `<button type="button" class="idbtn" data-fc="${esc(x._id)}">${esc(x._id)}</button> <span class="${CONFIRMED(x.outcome) ? "okc" : "muted"}">${esc(x.outcome || "no outcome")}</span> <span class="muted">${esc(x.visit_date || "")}</span> ${linkHtml(x.commons_photos_link, "photos")}`).join("<br>") : '<span class="muted">None yet. This record cannot be Field-verified until the team checks it on site.</span>'}</div>${canWrite ? '<button type="button" class="btn" id="newFc" style="margin-top:8px">Record a field check</button>' : ""}<span class="help">Field-verified is set only by a field check with outcome Confirmed. Partner field data (e.g. coastal unit photos) makes a record Partner-observed.</span></div>`;
+    }
+    return `<details class="grp" ${p === "1" || c.prio === p || c.fields.length <= 12 || k === "field_checks" ? "open" : ""}><summary><span class="pdot p${p}"></span>${esc(PNAME[p])}<span class="hint">${esc(PHINT[p])} · ${fs.length + (extra ? 1 : 0)} fields</span></summary><div class="fields">${extra}${fs.map(f => fieldHtml(c, f, r, isNew)).join("")}</div></details>`;
+  }).join("");
+  const dls = `<datalist id="dl_events">${data.events.map(e => `<option value="${esc(e._id)}">`).join("")}</datalist><datalist id="dl_he">${data.hazardous_events.map(e => `<option value="${esc(e._id)}">`).join("")}</datalist><datalist id="dl_records">${[...data.events, ...data.slow_onset, ...data.hazardous_events].map(e => `<option value="${esc(e._id)}">`).join("")}</datalist><datalist id="dl_sources">${data.sources.map(e => `<option value="${esc(e._id)}">`).join("")}</datalist>`;
+  $("#edroot").innerHTML = `<div class="scrim" id="scrim"></div><aside class="editor" role="dialog" aria-modal="true" aria-labelledby="edTitle">
+    <div class="edhead"><div style="min-width:0"><div class="eyebrow">${esc(c.name)}</div><h2 id="edTitle">${isNew ? "New " + esc(c.one) : esc(id)}${!isNew && isEx(r) ? '<span class="exb">EX</span>' : ""}</h2>${canWrite ? "" : '<div class="msg">You can view this record but not change it.</div>'}</div><button class="btn" id="edClose">Close</button></div>
+    <div class="edbody">${groups}${dls}${isNew ? "" : histHtml()}</div>
+    <div class="edfoot">${canWrite ? `<button class="btn primary" id="edSave">${isNew ? "Add " + esc(c.one) : "Save changes"}</button>` : ""}${canWrite && !isNew ? '<button class="btn danger" id="edDel" style="margin-left:auto">Delete…</button>' : ""}<span class="msg" id="edMsg">${!isNew && r.updated_at ? "Last saved " + esc(r.updated_at) : ""}</span></div></aside>`;
+  const close = () => { $("#edroot").innerHTML = ""; edState = null; render(); };
+  $("#edClose").onclick = close; $("#scrim").onclick = close;
+  if (!isNew) wireHist(k, id);
+  document.addEventListener("keydown", function esck(e) { if (e.key === "Escape") { close(); document.removeEventListener("keydown", esck); } });
+  const et = $("#f_event_type");
+  if (et && k === "events") { const sv2 = () => { const on = et.value === SARG; ["sargassum_flag","stranding_ref"].forEach(x => { const el = document.querySelector(`#edroot .fld[data-k="${x}"]`); if (el) el.hidden = !on; }); }; et.addEventListener("change", sv2); sv2(); }
+  const hg = $("#f_has_geodata");
+  if (hg && k === "sources") { const sv3 = () => { const on = hg.value === "Y"; ["geodata_type","geodata_file","geodata_link","original_crs","gis_status","sharing_terms"].forEach(x => { const el = document.querySelector(`#edroot .fld[data-k="${x}"]`); if (el) el.hidden = !on; }); }; hg.addEventListener("change", sv3); sv3(); }
+  const trig = $("#f_trigger"); if (trig && $("#f_climate_related")) trig.onchange = () => { $("#f_climate_related").value = climateOf(trig.value); };
+  const bv = $("#f_baseline_value"), cv = $("#f_current_value"); if (bv && cv && $("#f_change")) { const upd = () => { $("#f_change").value = (bv.value !== "" && cv.value !== "") ? +(cv.value - bv.value).toFixed(3) : ""; }; bv.oninput = upd; cv.oninput = upd; }
+  c.fields.filter(f => f.t === "url").forEach(f => { const el = $("#f_" + f.k); if (el) el.oninput = () => { $("#f_" + f.k + "_open").innerHTML = linkHtml(el.value, "Open"); }; });
+  const srcLinked = $("#srcLinked");
+  if (srcLinked) { const upd = () => { const ids = [...document.querySelectorAll("#srcList input:checked")].map(i => i.value); const sb = Object.fromEntries(data.sources.map(x => [x._id, x])), e = evidenceOf({ source_ids: ids }, sb);
+      srcLinked.innerHTML = (ids.length ? "<b>Linked:</b> " + ids.map(x => `<button type="button" class="idbtn" data-src="${esc(x)}">${esc(x)}</button>`).join(" ") : '<span style="color:var(--crit)">No source linked yet: tick at least one below.</span>')
+        + `<br><b>Desk-verified rule:</b> <span style="color:${e.meets ? "var(--ok)" : "var(--warn)"}">${e.meets ? "met" : "not met"}</span> <span class="muted">(${esc(e.why)})</span> · <b>Official or team evidence:</b> ${e.official ? "yes" : "no"}`; srcLinked.querySelectorAll("[data-src]").forEach(b => b.onclick = () => openEditor("sources", b.dataset.src)); }; $("#srcList").addEventListener("change", upd); upd(); }
+  $("#edroot").querySelectorAll("[data-ev]").forEach(b => b.onclick = () => openEditor("events", b.dataset.ev));
+  if (k === "sources") $("#edroot").querySelectorAll(".linked [data-src]").forEach(b => b.onclick = () => openEditor("sources", b.dataset.src));
+  const stSel = $("#f_source_type"), wa = $("#waBlock");
+  if (stSel && wa) stSel.addEventListener("change", () => { wa.hidden = stSel.value !== WA_TYPE; if (!isNew && stSel.value === WA_TYPE && r.source_type !== WA_TYPE && $("#attachBtn")) { $("#attachBtn").disabled = true; $("#attachBtn").title = "Save the change of source type first"; } });
+  const ab = $("#attachBtn"); if (ab) ab.onclick = async () => {
+    const files = [...($("#attachInput").files || [])].slice(0, 10), msg = $("#edMsg");
+    if (!files.length) { msg.className = "msg err"; msg.textContent = "Choose one or more photos first."; return; }
+    ab.disabled = true; msg.className = "msg"; msg.textContent = "Preparing " + files.length + " photo(s)…";
+    try {
+      const out = [];
+      for (const f of files) out.push(await shrinkImage(f));
+      msg.textContent = "Saving to the restricted folder…";
+      const res = await gs("attachPhotos", id, out);
+      applyData(res.data); openEditor("sources", id);
+      $("#edMsg").className = "msg ok"; $("#edMsg").textContent = res.saved + " photo(s) saved under " + res.ref + ".";
+    } catch (e) { msg.className = "msg err"; msg.textContent = "Could not attach: " + errText(e); ab.disabled = false; }
+  };
+  const lb = $("#linkEvBtn"); if (lb) lb.onclick = async () => {
+    const ev = $("#linkEv").value.trim(), row = data.events.find(e => e._id === ev), msg = $("#edMsg");
+    if (!row) { msg.className = "msg err"; msg.textContent = "There is no event " + (ev || "with that ID") + "."; return; }
+    if ((row.source_ids || []).includes(id)) { msg.className = "msg"; msg.textContent = ev + " already cites this source."; return; }
+    try { await db.collection("events").doc(ev).update({ source_ids: [...(row.source_ids || []), id], updated_at: new Date().toISOString().slice(0, 10) }); row.source_ids = [...(row.source_ids || []), id]; openEditor("sources", id); $("#edMsg").className = "msg ok"; $("#edMsg").textContent = "Linked to " + ev + "."; }
+    catch (e) { msg.className = "msg err"; msg.textContent = "Could not link: " + (e.message || e.code); }
+  };
+  const nfc = $("#newFc"); if (nfc) nfc.onclick = () => openEditor("field_checks", null, { event_id: id, easting: r.easting ?? "", northing: r.northing ?? "" });
+  $("#edroot").querySelectorAll("[data-fc]").forEach(b => b.onclick = () => openEditor("field_checks", b.dataset.fc));
+  const vsel = $("#f_verification_status"); if (vsel && k === "events") { const fvOpt = [...vsel.options].find(o => o.value === "Field-verified"); const ok = !isNew && data.field_checks.some(x => x.event_id === id && CONFIRMED(x.outcome)); if (fvOpt && !ok && r.verification_status !== "Field-verified") { fvOpt.disabled = true; fvOpt.value = "Field-verified"; fvOpt.textContent = "Field-verified (needs a confirming field check)"; } }
+  const sv = $("#edSave"); if (sv) sv.onclick = () => save(c, r, isNew);
+  const del = $("#edDel"); if (del) del.onclick = async () => {
+    if (del.dataset.armed !== "1") { del.dataset.armed = "1"; del.textContent = "Click again to delete"; return; }
+    try { await db.collection(k).doc(id).delete(); close(); } catch (e) { $("#edMsg").className = "msg err"; $("#edMsg").textContent = "Could not delete: " + (e.message || e.code); }
+  };
+  setTimeout(() => { const first = $("#edroot input:not([readonly]),#edroot select:not([disabled])"); if (first) first.focus(); }, 30);
+}
+/* New IDs are claimed on the server under a lock, so two colleagues saving at once never get the same ID. */
+async function claimAndWrite(c, id, auto, body) {
+  try { const r = await gs("createDoc", c.key, id, auto, body); applyData(r.data); return { ok: true, id: r.id }; }
+  catch (e) { return { ok: false, reason: errText(e) }; }
+}
+async function save(c, old, isNew) {
+  const msg = $("#edMsg"); msg.className = "msg";
+  const out = {};
+  document.querySelectorAll("#edroot .fld.invalid").forEach(el => el.classList.remove("invalid"));
+  for (const f of c.fields) {
+    const el = $("#f_" + f.k); if (!el || f.t === "auto" || f.k === "record_uuid") continue;
+    let v = el.value.trim();
+    if (f.t === "number") v = v === "" ? null : Number(v);
+    out[f.k] = v === "" ? null : v;
+  }
+  if (c.key === "events") {
+    out.source_ids = [...document.querySelectorAll("#srcList input:checked")].map(i => i.value);
+    out.climate_related = climateOf(out.trigger) || null;
+    out.record_uuid = old.record_uuid || (crypto.randomUUID ? crypto.randomUUID() : "u" + Date.now().toString(36));
+  }
+  if (c.key === "slow_onset") out.change = (out.baseline_value != null && out.current_value != null) ? +(out.current_value - out.baseline_value).toFixed(3) : null;
+  let docId = edState.id, autoId = false, offered = null;
+  if (isNew) {
+    if (c.id) { autoId = !out[c.id]; docId = out[c.id] || nextId(c, out); offered = docId; out[c.id] = docId; }
+    else docId = c.pref + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2, 5).toUpperCase();
+    if (!/^[A-Za-z0-9_\-.~:@+]{1,200}$/.test(docId)) { msg.className = "msg err"; msg.textContent = "The ID can use letters, numbers and - only."; return; }
+    if (!autoId && data[c.key].some(r => r._id === docId)) { msg.className = "msg err"; msg.textContent = docId + " already exists. Leave the ID blank to use the next free number."; return; }
+  }
+  if (isNew && c.key === "hazardous_events" && (blank(out.hazard) || blank(out.date_start))) { msg.className = "msg err"; msg.textContent = "Fill the hazard and the start date before saving. The ID is numbered from the start date."; ["hazard","date_start"].filter(k2 => blank(out[k2])).forEach(k2 => { const el = document.querySelector(`#edroot .fld[data-k="${k2}"]`); if (el) el.classList.add("invalid"); }); return; }
+  if (c.key === "met_ids") {
+    if (!blank(out.hazardous_event_id) && !data.hazardous_events.some(h => h._id === out.hazardous_event_id)) { msg.className = "msg err"; msg.textContent = "There is no hazardous event " + out.hazardous_event_id + ". Add it on the Hazardous events tab first, or check the ID."; const el = document.querySelector('#edroot .fld[data-k="hazardous_event_id"]'); if (el) el.classList.add("invalid"); return; }
+    if (out.match_status === "Matched to a hazardous event" && blank(out.hazardous_event_id)) { msg.className = "msg err"; msg.textContent = "Status is Matched: choose the inventory hazardous event (hazardous_event_id)."; const el = document.querySelector('#edroot .fld[data-k="hazardous_event_id"]'); if (el) el.classList.add("invalid"); return; }
+    const dup = data.met_ids.find(x => x._id !== edState.id && !blank(out.wmo_che_id) && x.wmo_che_id === out.wmo_che_id);
+    if (dup) { msg.className = "msg err"; msg.textContent = "Met Service ID " + out.wmo_che_id + " is already on row " + dup._id + "."; return; }
+  }
+  const linkKey = c.fields.some(f => f.k === "record_id") ? "record_id" : (c.detail && c.fields.some(f => f.k === "event_id")) ? "event_id" : null;
+  if (c.detail && linkKey && blank(out[linkKey])) { msg.className = "msg err"; msg.textContent = "Choose the event or record this row belongs to (" + linkKey + ")."; const el = document.querySelector(`#edroot .fld[data-k="${linkKey}"]`); if (el) el.classList.add("invalid"); return; }
+  if (c.key === "events" && out.event_type !== SARG) { out.sargassum_flag = null; out.stranding_ref = null; }
+  const missing = c.fields.filter(f => f.r && f.t !== "auto" && f.k !== c.id && blank(out[f.k])).map(f => f.k);
+  if (c.key === "events" && out.event_type === SARG && blank(out.sargassum_flag)) missing.push("sargassum_flag");
+  if (c.key === "events" && HE_TRIG.includes(out.trigger) && blank(out.hazardous_event_id)) missing.push("hazardous_event_id");
+  if (c.key === "events" && out.road_closed !== "Y" && IMPACT_ALL.every(k2 => blank(out[k2]))) missing.push("an impact field");
+  if (c.key === "events" && !out.source_ids.length) missing.push("source_ids");
+  const bad = [];
+  for (const f of c.fields) if (f.t === "url" && out[f.k] && !safeUrl(out[f.k])) bad.push(f.k);
+  if (c.key === "field_checks" && !blank(out.event_id) && !data.events.some(e => e._id === out.event_id)) { msg.className = "msg err"; msg.textContent = "There is no event " + out.event_id + ". Pick the event this visit checks."; const el = document.querySelector('#edroot .fld[data-k="event_id"]'); if (el) el.classList.add("invalid"); return; }
+  if (c.key === "events") {
+    const selfId = isNew ? (out.event_id || null) : docId;
+    for (const k2 of ["parent_event_id","duplicate_of"]) {
+      const v2 = out[k2]; if (blank(v2)) continue;
+      let why = "";
+      if (selfId && v2 === selfId) why = "cannot be the event itself";
+      else if (!data.events.some(e => e._id === v2)) why = "is not an event in the inventory. Enter that event first, or check the ID";
+      else if (k2 === "parent_event_id") { let cur = data.events.find(e => e._id === v2), n = 0; while (cur && n++ < 200) { if (selfId && cur.parent_event_id === selfId) { why = "would make a loop: " + v2 + " is already caused by this event"; break; } cur = blank(cur.parent_event_id) ? null : data.events.find(e => e._id === cur.parent_event_id); } }
+      if (why) { msg.className = "msg err"; msg.textContent = k2 + " " + v2 + " " + why + "."; const el = document.querySelector(`#edroot .fld[data-k="${k2}"]`); if (el) el.classList.add("invalid"); return; }
+    }
+  }
+  if (c.key === "events" && out.verification_status === "Field-verified" && old.verification_status !== "Field-verified" && !data.field_checks.some(x => x.event_id === docId && CONFIRMED(x.outcome))) { msg.className = "msg err"; msg.textContent = "Field-verified is set by a field check from the CRVA team. Choose “Record a field check”, or pick Partner-observed if the field data came from a partner."; return; }
+  if (out.easting != null && (out.easting < 733000 || out.easting > 776000)) bad.push("easting");
+  if (out.northing != null && (out.northing < 1231000 || out.northing > 1259000)) bad.push("northing");
+  for (const f of c.fields) if (f.t === "number" && out[f.k] != null && !["change","baseline_value","current_value"].includes(f.k) && out[f.k] < 0) bad.push(f.k);
+  [...missing, ...bad].forEach(k => { const el = document.querySelector(`#edroot .fld[data-k="${k}"]`); if (el) el.classList.add("invalid"); });
+  if (bad.length) { msg.className = "msg err"; msg.textContent = bad.some(b => c.fields.some(f => f.k === b && f.t === "url")) ? "The link must be a full web address starting with https:// (or http://)." : "Check " + bad.join(", ") + ": coordinates must fall inside Tobago (UTM 20N) and counts cannot be negative."; return; }
+  out.updated_at = new Date().toISOString().slice(0, 10);
+  const btn = $("#edSave"); btn.disabled = true;
+  try {
+    const clean = Object.fromEntries(Object.entries(out).filter(([, v]) => v !== null && v !== undefined));
+    const keep = {}; const formKeys = new Set([...c.fields.map(f => f.k), "source_ids", "updated_at"]);
+    for (const [k2, v2] of Object.entries(old)) if (k2 !== "_id" && !formKeys.has(k2)) keep[k2] = v2;
+    if (isNew && c.id) {
+      const claim = await claimAndWrite(c, docId, autoId, { ...keep, ...clean });
+      if (!claim.ok) { msg.className = "msg err"; msg.textContent = claim.reason; btn.disabled = false; return; }
+      docId = claim.id; clean[c.id] = docId;
+    } else {
+      await db.collection(c.key).doc(docId).set({ ...keep, ...clean });
+    }
+    if (missing.length) { msg.className = "msg"; msg.style.color = "var(--warn)"; msg.textContent = "Saved. Still missing required: " + missing.join(", ") + "."; }
+    else { msg.className = "msg ok"; msg.textContent = "Saved."; }
+    if (c.key === "events" && out.event_type === SARG && out.sargassum_flag === "Green" && IMPACT_KEYS.every(k2 => blank(out[k2]))) { msg.className = "msg"; msg.style.color = "var(--warn)"; msg.textContent += " Green strandings are recorded only with an impact: fill people affected, livelihoods, facilities, damage or costs, or leave it to the coastal unit's stranding record."; }
+    if (c.key === "met_ids" && !blank(out.hazardous_event_id) && !blank(out.wmo_che_id)) {
+      const he = data.hazardous_events.find(h => h._id === out.hazardous_event_id);
+      if (he && he.wmo_che_id !== out.wmo_che_id) {
+        if (!blank(he.wmo_che_id)) msg.textContent += " " + he._id + " already had Met Service ID " + he.wmo_che_id + "; it now shows " + out.wmo_che_id + ".";
+        await db.collection("hazardous_events").doc(he._id).update({ wmo_che_id: out.wmo_che_id, updated_at: out.updated_at });
+        msg.textContent += " Copied to " + he._id + ".";
+      }
+    }
+    if (c.key === "field_checks") {
+      const evRef = db.collection("events").doc(out.event_id), evRow = data.events.find(e => e._id === out.event_id) || {};
+      const complete = FC_NEEDED.every(k2 => !blank(out[k2]));
+      if (CONFIRMED(out.outcome) && complete) {
+        await evRef.update({ verification_status: "Field-verified", field_check_id: docId, verified_by: out.team, verification_date: out.visit_date, updated_at: out.updated_at });
+        msg.textContent += " " + out.event_id + " is now Field-verified." + (out.outcome === "Confirmed with corrections" ? " Open the event and make the corrections." : "");
+      } else if (CONFIRMED(out.outcome)) {
+        msg.textContent += " The event stays " + (evRow.verification_status || "unverified") + " until team, date, GPS point and photos are filled.";
+      } else if (evRow.field_check_id === docId && evRow.verification_status === "Field-verified") {
+        msg.textContent += " This visit no longer confirms " + out.event_id + ". Open the event and set its status by hand; QA will flag it until you do.";
+      } else if (out.outcome) {
+        msg.textContent += " " + out.event_id + " was not changed. Open it to set Duplicate or Rejected if the visit showed that.";
+      }
+    }
+    if (isNew && offered && docId !== offered) { msg.className = "msg ok"; msg.style.color = ""; msg.textContent = "Saved as " + docId + ": " + offered + " was taken by a colleague a moment ago." + (missing.length ? " Still missing required: " + missing.join(", ") + "." : ""); }
+    if (isNew) { edState.id = docId; edState.isNew = false; $("#edTitle").textContent = docId; btn.textContent = "Save changes"; const fid = $("#f_" + c.id); if (fid) { fid.value = docId; fid.readOnly = true; } btn.onclick = () => save(c, { ...old, ...clean }, false); }
+  } catch (e) {
+    msg.className = "msg err";
+    msg.textContent = e.code === "invalid_argument" || e.code === "permission_denied" ? "You have view-only access, so changes can’t be saved." : "Could not save (" + (e.code || "error") + "). Try again.";
+  }
+  btn.disabled = false;
+}
+
+/* ---------- export ---------- */
+function sheetRows(c) {
+  const keys = c.fields.map(f => f.k);
+  const ev = c.key === "events", srcById = ev ? Object.fromEntries(data.sources.map(x => [x._id, x])) : null;
+  const rows = data[c.key].map(r => { const o = {}; keys.forEach(k => o[k] = k === "climate_related" && ev ? climateOf(r.trigger) : k === "significant" && ev ? sigOf(r) : (r[k] ?? "")); if (!c.id) o.row_id = r._id;
+    if (ev) { const b = bestRel(r, srcById), e = evidenceOf(r, srcById); o.best_source_reliability = b; o.desk_verified_rule = (e.meets ? "Met: " : "Not met: ") + e.why; o.evidence_check = r.verification_status === "Desk-verified" && !e.meets ? "Marked Desk-verified but the rule is not met" : ""; }
+    return o; });
+  const extra = ev ? ["best_source_reliability", "desk_verified_rule", "evidence_check"] : [];
+  return { keys: c.id ? [...keys, ...extra] : ["row_id", ...keys, ...extra], rows };
+}
+const exportUrl = (fmt, gid) => "https://docs.google.com/spreadsheets/d/" + SHEET.id + "/export?format=" + fmt + (gid !== undefined ? "&gid=" + gid : "");
+$("#xlsBtn").onclick = () => { if (SHEET.id) window.open(exportUrl("xlsx"), "_blank", "noopener"); };
+$("#csvBtn").onclick = () => {
+  const c = COLS[tab === "detail" ? detailKey : tab]; if (!c || !SHEET.id) return;
+  const gid = SHEET.gids[SHEET.names[c.key]];
+  if (gid !== undefined) window.open(exportUrl("csv", gid), "_blank", "noopener");
+};
+$("#addBtn").onclick = () => openEditor(tab === "detail" ? detailKey : tab, null);
+
+const WA_TYPE = "WhatsApp or messaging app";
+/* Resize a photo in the browser before upload (max 1600 px, JPEG). Re-drawing also drops any hidden metadata. */
+function shrinkImage(file) {
+  return new Promise((resolve, reject) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, 1600 / Math.max(img.width, img.height));
+      const cv = document.createElement("canvas"); cv.width = Math.round(img.width * k); cv.height = Math.round(img.height * k);
+      cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height); URL.revokeObjectURL(url);
+      resolve({ name: file.name, data: cv.toDataURL("image/jpeg", 0.85).split(",")[1] });
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error(file.name + " is not an image this browser can read")); };
+    img.src = url;
+  });
+}
+/* ---------- Admin tab (admins only) and the "Ask for access" screen ---------- */
+const TEAM_LIST = ["Climate Unit", "Coastal Unit", "Other"];
+const ROLE_HELP = { admin: "Admin: everything an editor can do, plus this Admin tab", editor: "Editor: adds and edits records", viewer: "Viewer: reads and downloads only" };
+let ADMIN = null, ADMIN_ALERTS = 0, adminForm = null, adminMsg = null;
+const fmtDay = d => d ? String(d).slice(0, 10) : "";
+const daysSince = d => { const t = Date.parse(String(d || "").slice(0, 10)); return isNaN(t) ? Infinity : Math.floor((Date.now() - t) / 864e5); };
+async function loadAdmin() {
+  $("#main").innerHTML = `<div class="card"><p class="muted" style="margin:0">Loading the Admin tab…</p></div>`;
+  try { ADMIN = await gs("getAdminView"); } catch (e) { $("#main").innerHTML = `<div class="card"><p class="msg err">${esc(errText(e))}</p></div>`; return; }
+  ADMIN_ALERTS = ADMIN.requests.filter(r => r.status === "Pending").length; renderTabs(); renderAdmin();
+}
+function adminDone(res, okText) {
+  ADMIN = res.view || res; ACT = null; ADMIN_ALERTS = ADMIN.requests.filter(r => r.status === "Pending").length;
+  adminMsg = { ok: okText, warn: (res.warnings || []) }; adminForm = null; renderTabs(); renderAdmin();
+}
+function renderAdmin() {
+  if (!ADMIN) return loadAdmin();
+  const A = ADMIN, fp = (A.folder && A.folder.people) || {}, rp = (A.restricted && A.restricted.people) || {};
+  const active = A.members.filter(m => m.role !== "removed"), removed = A.members.filter(m => m.role === "removed");
+  const byEmail = Object.fromEntries(A.members.map(m => [m.email, m]));
+  const pending = A.requests.filter(r => r.status === "Pending");
+  const nonHostAdmins = active.filter(m => m.role === "admin" && !m.owner).length;
+  const folderCell = m => {
+    if (A.folder && A.folder.error) return `<span class="muted">?</span>`;
+    const has = fp[m.email], want = m.role === "viewer" ? "Viewer" : "Editor";
+    if (has === "Owner" || has === want || (has === "Editor" && want === "Viewer")) return esc(has === "Owner" ? "Owner" : has);
+    return `<span class="flag">${has ? esc(has) + ", needs " + want : "No access"}</span> <button class="idbtn" data-fix="${esc(m.email)}">Fix</button>`;
+  };
+  const roleTag = m => `<span class="roletag r-${esc(m.role)}">${esc(m.role)}</span>${m.owner ? ' <span class="muted" style="font-size:12px">host account</span>' : ""}${m.me ? ' <span class="muted" style="font-size:12px">(you)</span>' : ""}`;
+  const msg = adminMsg ? `<div class="callout" role="status">${adminMsg.ok ? `<b>${esc(adminMsg.ok)}</b>` : ""}${adminMsg.warn.map(w => `<div class="flagline">${esc(w)}</div>`).join("")}</div>` : "";
+  const reqCard = pending.length ? `<div class="card"><h2>Access requests <span class="cntb">${pending.length}</span></h2>
+    <p class="note" style="margin:0 0 10px">People who opened the inventory and asked to be let in. Adding them shares the inventory folder for you.</p>
+    <div class="tablebox"><table><thead><tr><th>Asked</th><th>Name</th><th>Email</th><th>Team</th><th>Reason</th><th></th></tr></thead><tbody>
+    ${pending.map(r => `<tr><td class="mono">${esc(fmtDay(r.at))}</td><td>${esc(r.name)}</td><td class="mono">${esc(r.email)}</td><td>${esc(r.team)}</td><td>${esc(r.note || "")}</td>
+      <td style="white-space:nowrap"><button class="btn primary" data-approve="${esc(r.id)}">Add…</button> <button class="btn" data-decline="${esc(r.id)}">Decline</button></td></tr>`).join("")}</tbody></table></div></div>` : "";
+  const f = adminForm;
+  const formCard = f ? `<div class="card" id="memForm"><h2>${f.existing ? "Change " + esc(f.name || f.email) : "Add a member"}</h2>
+    <div class="fields" style="padding:0">
+      <div class="fld"><label for="m_email">Email (Google account)<span class="req">*</span></label><input id="m_email" type="email" value="${esc(f.email || "")}" ${f.existing ? "readonly" : ""}></div>
+      <div class="fld"><label for="m_name">Name<span class="req">*</span></label><input id="m_name" value="${esc(f.name || "")}"></div>
+      <div class="fld"><label for="m_role">Role<span class="req">*</span></label><select id="m_role">${["admin","editor","viewer"].map(r => `<option value="${r}" ${f.role === r ? "selected" : ""}>${esc(ROLE_HELP[r])}</option>`).join("")}</select></div>
+      <div class="fld"><label for="m_team">Team<span class="req">*</span></label><select id="m_team">${TEAM_LIST.map(t => `<option ${f.team === t ? "selected" : ""}>${esc(t)}</option>`).join("")}</select><span class="help">Only Climate Unit members may ever be given the restricted WhatsApp folder.</span></div>
+      <div class="fld"><label for="m_pos">Position</label><input id="m_pos" value="${esc(f.position || "")}" placeholder="e.g. Senior Policy Analyst"></div>
+    </div>
+    <p class="note" id="m_hint" style="margin:10px 0 0"></p>
+    <div class="actions" style="margin-top:12px"><button class="btn primary" id="m_save">${f.existing ? "Save changes" : "Add and share the folder"}</button><button class="btn" id="m_cancel">Cancel</button><span class="msg" id="m_msg"></span></div></div>` : "";
+  const memCard = `<div class="card"><div class="panelhead" style="margin-bottom:8px"><div><h2>Members</h2>
+      <p class="note" style="margin:0">${active.length} active. Admins: ${active.filter(m => m.role === "admin").map(m => esc(m.name || m.email)).join(", ")}. Agreed for this build: the Director plus one other, as well as the host account.${nonHostAdmins > 2 ? ` <span class="flag">More admins than agreed.</span>` : ""}</p></div>
+      <div class="actions"><button class="btn primary" id="addMem">Add member</button></div></div>
+    <div class="tablebox"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Team</th><th>Position</th><th>Last visit</th><th>Inventory folder</th><th></th></tr></thead><tbody>
+    ${active.map(m => `<tr><td>${esc(m.name)}</td><td class="mono">${esc(m.email)}</td><td>${roleTag(m)}</td><td>${esc(m.team || "—")}</td><td>${esc(m.position || "")}</td><td class="mono">${esc(m.last_seen || "—")}</td><td>${folderCell(m)}</td>
+      <td style="white-space:nowrap"><button class="idbtn" data-edit="${esc(m.email)}">Change</button>${m.owner || m.me ? "" : ` <button class="idbtn" data-remove="${esc(m.email)}">Remove</button>`}</td></tr>`).join("")}</tbody></table></div>
+    ${removed.length ? `<details class="grp" style="margin-top:10px"><summary>Removed members (${removed.length})<span class="hint">Kept so names on old records still make sense</span></summary><div style="padding:10px 14px"><ul class="plain">${removed.map(m => `<li><b>${esc(m.name)}</b> <span class="mono">${esc(m.email)}</span> · removed ${esc(fmtDay(m.removed_at))} by ${esc(m.removed_by)} <button class="idbtn" data-readd="${esc(m.email)}">Add back…</button></li>`).join("")}</ul></div></details>` : ""}
+    ${(() => { const extra = Object.keys(fp).filter(e => !byEmail[e] || byEmail[e].role === "removed").filter(e => fp[e] !== "Owner"); return extra.length ? `<p class="note" style="margin:10px 0 0"><span class="flag">Has folder access but is not an active member:</span> ${extra.map(e => `<span class="mono">${esc(e)}</span> (${esc(fp[e])})`).join(", ")}. Add them here, or remove their access in Drive.</p>` : ""; })()}
+    <p class="note" style="margin:10px 0 0">Adding, changing and removing a member also shares or unshares the inventory folder, and every change goes to the audit log. Removed members are kept on the list, marked "removed".</p></div>`;
+  const rCard = (() => {
+    const R = A.restricted || {};
+    if (R.error) return `<div class="card"><h2>Restricted WhatsApp folder</h2><p class="note" style="margin:0">${esc(R.error)}</p></div>`;
+    const rows = Object.keys(rp).map(e => { const m = byEmail[e]; const ok = rp[e] === "Owner" || (m && m.role !== "removed" && m.team === "Climate Unit");
+      const why = rp[e] === "Owner" ? "" : !m ? "Not on the member list" : m.role === "removed" ? "Removed member" : m.team !== "Climate Unit" ? "Not Climate Unit (" + (m.team || "no team") + ")" : "";
+      return `<tr><td>${esc(m ? m.name : "")}</td><td class="mono">${esc(e)}</td><td>${esc(rp[e])}</td><td>${ok ? '<span class="okc">OK</span>' : `<span class="flag">${esc(why)}</span>`}</td></tr>`; });
+    const bad = Object.keys(rp).filter(e => { const m = byEmail[e]; return rp[e] !== "Owner" && !(m && m.role !== "removed" && m.team === "Climate Unit"); }).length;
+    return `<div class="card"><h2>Restricted WhatsApp folder</h2><p class="note" style="margin:0 0 10px">Climate Unit only. The app never shares this folder: the owner shares it in Drive. ${bad ? `<span class="flag">${bad} ${bad === 1 ? "person" : "people"} should not have access.</span> Remove them in Drive.` : '<span class="okc">Only the Climate Unit has access.</span>'} <a class="extlink" href="${esc(safeUrl(R.url))}" target="_blank" rel="noopener noreferrer">Open the folder ↗</a></p>
+      <div class="tablebox"><table><thead><tr><th>Name</th><th>Email</th><th>Access</th><th>Check</th></tr></thead><tbody>${rows.join("")}</tbody></table></div></div>`;
+  })();
+  const dCard = `<div class="card"><h2>Deleted records</h2><p class="note" style="margin:0 0 10px">Deleting hides a record but keeps it in the Sheet. Recover it here; an event comes back with its linked sources. Deleted IDs are never reused.</p>
+    ${A.deleted.length ? `<div class="tablebox"><table><thead><tr><th>Tab</th><th>ID</th><th>Title</th><th>Deleted</th><th>By</th><th></th></tr></thead><tbody>${A.deleted.map(d => `<tr><td>${esc(d.tab)}</td><td class="mono">${esc(d.id)}</td><td>${esc(d.title)}</td><td class="mono">${esc(d.deleted_at)}</td><td class="mono">${esc(d.deleted_by)}</td><td><button class="idbtn" data-recover="${esc(d.key)}|${esc(d.id)}">Recover</button></td></tr>`).join("")}</tbody></table></div>` : '<p class="muted" style="margin:0">Nothing deleted.</p>'}</div>`;
+  const H = A.house, mOld = !H.maint || daysSince(H.maint.at) > 8, gOld = !H.gis || daysSince(H.gis.at) > 8;
+  const hCard = `<div class="card"><h2>Housekeeping</h2><ul class="plain">
+    <li><b>Weekly maintenance</b> (backup, audit archive, Members lock): ${H.maint ? esc(H.maint.at) : "never run"} ${mOld ? `<span class="flag">${H.maint ? "More than a week ago." : ""} Ask the host to run installWeeklyMaintenance once (SETUP step 8).</span>` : '<span class="okc">On schedule.</span>'}
+      ${H.maint ? `<div class="muted" style="font-size:12.5px">${H.maint.summary.map(x => `<span class="${/FAILED|DIFFER/.test(x) ? "flag" : ""}">${esc(x)}</span>`).join(" · ")}</div>` : ""}</li>
+    <li><b>Tampering check</b> (live log compared with the host-only archive): ${H.tamper ? esc(H.tamper.at) + " · " + (H.tamper.ok ? `<span class="okc">${esc(H.tamper.checked)} entries match.</span>` : `<span class="flag">${esc(H.tamper.mismatches)} entries differ from the archive.</span> Ask the host to compare the log with the archive.${(H.tamper.first || []).map(f => `<div class="muted" style="font-size:12px">Row ${esc(f.row)}: log "${esc(f.live)}", archive "${esc(f.archived)}"</div>`).join("")}`) : "not run yet (runs with the weekly maintenance)"}</li>
+    <li><b>GIS export</b>: ${H.gis ? esc(H.gis.at) + " (" + esc(H.gis.count) + " events)" : "never run"} ${gOld ? '<span class="flag">More than a week ago, or never. Check that the weekly export is switched on (SETUP step 7).</span>' : '<span class="okc">On schedule.</span>'}</li>
+    <li><b>Removing deleted records for good</b> stays in the script editor (purgeDeleted), because it cannot be undone.</li></ul></div>`;
+  const S2 = A.settings;
+  const sCard = `<div class="card"><h2>Guide links</h2><p class="note" style="margin:0 0 10px">The links on the How-to guide tab. Point them at Google Docs copies so colleagues without a Claude account can open them.</p>
+    <div class="fields" style="padding:0">${[["guideUrl","How-to guide"],["manualUrl","Instruction manual"],["questionsUrl","Open questions for inventory users (the extract, seen by everyone)"],["fullQuestionsUrl","Full open questions log (shown to Climate Unit members only)"]].map(([k, l]) => `<div class="fld wide"><label for="s_${k}">${esc(l)}</label><input id="s_${k}" type="url" value="${esc(S2[k] || "")}"></div>`).join("")}</div>
+    <div class="actions" style="margin-top:12px"><button class="btn primary" id="s_save">Save links</button><span class="msg" id="s_msg"></span></div></div>`;
+  const aCard = `<div class="card"><h2>Activity</h2><p class="note" style="margin:0 0 10px">Everything done in the inventory, newest first: records, members and access, refused sign-ins, photos, exports and maintenance. Only admins can see this list and open the log. Each record's own changes are also shown to every member in the record's History box.</p><div id="actBody"></div></div>`;
+  $("#main").innerHTML = `<div style="display:flex;flex-direction:column;gap:18px">${msg}${reqCard}${formCard}${memCard}${aCard}<div class="grid2">${rCard}${dCard}</div><div class="grid2">${hCard}${sCard}</div></div>`;
+  wireAdmin();
+  if (ACT) renderActivity(); else loadActivity();
+}
+function wireAdmin() {
+  const A = ADMIN, find = e => A.members.find(m => m.email === e);
+  const open = o => { adminForm = o; adminMsg = null; renderAdmin(); const el = $("#memForm"); if (el) { el.scrollIntoView({ behavior: "smooth", block: "start" }); ($("#m_email").readOnly ? $("#m_name") : $("#m_email")).focus(); } };
+  const on = (sel, fn) => document.querySelectorAll(sel).forEach(b => b.onclick = () => fn(b));
+  if ($("#addMem")) $("#addMem").onclick = () => open({ role: "editor", team: "Climate Unit" });
+  on("[data-edit]", b => { const m = find(b.dataset.edit); open({ ...m, existing: true }); });
+  on("[data-readd]", b => { const m = find(b.dataset.readd); open({ ...m, role: m.team === "Climate Unit" ? "editor" : "viewer" }); });
+  on("[data-approve]", b => { const r = A.requests.find(x => x.id === b.dataset.approve); open({ email: r.email, name: r.name, team: r.team, role: r.team === "Climate Unit" ? "editor" : "viewer", requestId: r.id }); });
+  on("[data-decline]", async b => { b.disabled = true; try { adminDone(await gs("declineRequest", b.dataset.decline), "Request declined. No email is sent; tell the person directly if needed."); } catch (e) { b.disabled = false; alertMsg(e); } });
+  on("[data-fix]", async b => { const m = find(b.dataset.fix); b.disabled = true; try { adminDone(await gs("saveMember", m), "Folder sharing fixed for " + (m.name || m.email) + "."); } catch (e) { b.disabled = false; alertMsg(e); } });
+  on("[data-remove]", async b => {
+    if (b.dataset.armed !== "1") { b.dataset.armed = "1"; b.textContent = "Click again to remove"; return; }
+    const m = find(b.dataset.remove); b.disabled = true;
+    try { adminDone(await gs("removeMember", m.email), (m.name || m.email) + " removed. Their access to the inventory folder has been taken away."); } catch (e) { b.disabled = false; alertMsg(e); }
+  });
+  on("[data-recover]", async b => { const [k, id] = b.dataset.recover.split("|"); b.disabled = true;
+    try { const r = await gs("recoverRecord", k, id); applyData(r.data); adminDone(r.view, id + " recovered."); } catch (e) { b.disabled = false; alertMsg(e); } });
+  if ($("#s_save")) $("#s_save").onclick = async () => {
+    const o = {}; ["guideUrl","manualUrl","questionsUrl","fullQuestionsUrl"].forEach(k => o[k] = $("#s_" + k).value.trim());
+    $("#s_save").disabled = true;
+    try { const r = await gs("saveSettings", o); SETTINGS = r.settings; adminDone(r.view, "Guide links saved."); } catch (e) { $("#s_save").disabled = false; $("#s_msg").className = "msg err"; $("#s_msg").textContent = errText(e); }
+  };
+  if ($("#memForm")) {
+    const hint = () => { const t = $("#m_team").value, r = $("#m_role").value;
+      $("#m_hint").innerHTML = (r === "viewer" ? "The inventory folder will be shared as <b>Viewer</b>." : "The inventory folder will be shared as <b>Editor</b>.") + (t !== "Climate Unit" ? " This person must <b>never</b> be given the restricted WhatsApp folder." : " The restricted WhatsApp folder is not shared by the app; the owner shares it in Drive.") + (r === "admin" ? " Agreed admins for this build: the Director plus one other." : ""); };
+    $("#m_team").onchange = hint; $("#m_role").onchange = hint; hint();
+    $("#m_cancel").onclick = () => { adminForm = null; renderAdmin(); };
+    $("#m_save").onclick = async () => {
+      const m = { email: $("#m_email").value.trim(), name: $("#m_name").value.trim(), role: $("#m_role").value, team: $("#m_team").value, position: $("#m_pos").value.trim(), requestId: adminForm.requestId || "" };
+      if (!m.email || !m.name) { $("#m_msg").className = "msg err"; $("#m_msg").textContent = "Email and name are needed."; return; }
+      $("#m_save").disabled = true; $("#m_msg").className = "msg"; $("#m_msg").textContent = "Saving and sharing…";
+      try { adminDone(await gs("saveMember", m), adminForm.existing ? "Saved." : m.name + " added as " + m.role + ". Google Drive emails them that the folder is shared."); }
+      catch (e) { $("#m_save").disabled = false; $("#m_msg").className = "msg err"; $("#m_msg").textContent = errText(e); }
+    };
+  }
+}
+function alertMsg(e) { adminMsg = { ok: "", warn: [errText(e)] }; renderAdmin(); }
+
+/* Shown instead of the inventory when the person is not (yet) a member. */
+async function renderAccess(kind, email) {
+  ["#strip","#tabs","#connBanner"].forEach(x => $(x).style.display = "none");
+  ["#csvBtn","#xlsBtn","#addBtn"].forEach(s => $(s).hidden = true);
+  if (kind === "who") {
+    $("#main").innerHTML = `<div class="card access"><h2>We can't tell who you are</h2><p>Google didn't tell the inventory which account you're signed in with. This usually happens when you're signed in to more than one Google account.</p><ol><li>Sign out of your other Google accounts, or open this link in a private window and sign in with your work account.</li><li>Reload this page.</li></ol></div>`;
+    return;
+  }
+  let mine = null; try { mine = await gs("myAccessRequest"); } catch (e) {}
+  const lead = kind === "member" ? `You're signed in as <b class="mono">${esc(email)}</b>, which isn't on the inventory's member list.` : `You're signed in as <b class="mono">${esc(email)}</b>, but the inventory folder isn't shared with you yet.`;
+  const done = r => `<div class="callout" role="status"><b>Request sent${r && r.at ? " on " + esc(fmtDay(r.at)) : ""}.</b> An admin will add you, and Google Drive will email you when the inventory folder is shared. Then reload this page.</div>`;
+  $("#main").innerHTML = `<div class="card access"><h2>Ask for access</h2><p>${lead} The inventory is the Climate Unit's record of hazard events. Partners such as the Coastal Unit can be given view access.</p>
+    <p class="note">Wrong account? Sign in with the right one and reload.</p>
+    ${mine ? done(mine) : `<div class="fields" style="padding:0">
+      <div class="fld"><label for="a_name">Your name<span class="req">*</span></label><input id="a_name" autocomplete="name"></div>
+      <div class="fld"><label for="a_team">Your team<span class="req">*</span></label><select id="a_team">${TEAM_LIST.map(t => `<option>${esc(t)}</option>`).join("")}</select></div>
+      <div class="fld wide"><label for="a_note">Why do you need access?</label><textarea id="a_note" maxlength="300" placeholder="e.g. Coastal Unit officer: to check coastal events against our beach profiles"></textarea></div></div>
+    <div class="actions" style="margin-top:12px"><button class="btn primary" id="a_send">Ask for access</button><span class="msg" id="a_msg"></span></div>`}</div>`;
+  if (!mine) $("#a_send").onclick = async () => {
+    const n = $("#a_name").value.trim(); if (!n) { $("#a_msg").className = "msg err"; $("#a_msg").textContent = "Please give your name."; return; }
+    $("#a_send").disabled = true; $("#a_msg").className = "msg"; $("#a_msg").textContent = "Sending…";
+    try { const r = await gs("requestAccess", n, $("#a_team").value, $("#a_note").value.trim());
+      $("#a_send").closest(".actions").outerHTML = done(r); document.querySelectorAll(".access .fields").forEach(x => x.remove()); }
+    catch (e) { $("#a_send").disabled = false; $("#a_msg").className = "msg err"; $("#a_msg").textContent = errText(e); }
+  };
+}
+
+/* ---------- Activity list (admins) and History box (everyone) ---------- */
+let ACT = null, actF = { who: "", kind: "", from: "", to: "", q: "", n: 100 };
+const ACT_KINDS = [["records", "Records"], ["people", "Members and access"], ["refused", "Refused sign-ins"], ["files", "Photos and exports"], ["system", "Maintenance and settings"]];
+const actKind = a => /^record\.purge|^maintenance|^settings|^check/.test(a) ? "system" : /^record\.|^examples/.test(a) ? "records" : /^member|^access/.test(a) ? "people" : /^auth/.test(a) ? "refused" : "files";
+const recWord = (k) => COLS[k] ? COLS[k].one.toLowerCase() : k;
+function memText(d) {
+  const m = String(d || "").match(/^(\S+) role=(\S+) team=(.+?)(?: \(was (\S+)\))?$/);
+  if (!m) return d;
+  const nm = (ACT && ACT.names[m[1]]) || m[1];
+  return nm + " as " + m[2] + " (" + m[3] + ")" + (m[4] ? ", was " + m[4] : "");
+}
+function actText(a, d) {
+  const rec = String(d || "").match(/^(\S+) (\S+)/) || [];
+  const w = { "record.create": "Added", "record.save": "Edited", "record.delete": "Deleted", "record.recover": "Recovered" }[a];
+  if (w) return { text: w + " " + recWord(rec[1]), key: rec[1], id: rec[2] };
+  const m = {
+    "record.purge": "Removed deleted records for good: " + d,
+    "photos.attach": "Attached " + (String(d).split("×")[1] || "") + " WhatsApp photo(s) to source " + String(d).split(" ")[0],
+    "export.gis": "Exported verified events for the GIS Specialist (" + d + ")",
+    "maintenance.weekly": "Weekly maintenance: " + d,
+    "examples.delete": "Deleted the training examples",
+    "auth.notmember": "Refused: " + d + " is not on the member list",
+    "auth.nofolder": "Refused: the inventory folder is not shared with " + d,
+    "access.request": "Asked for access (" + d + ")",
+    "access.decline": "Declined the access request from " + d,
+    "member.add": "Added member " + memText(d), "member.update": "Changed member " + memText(d), "member.remove": "Removed member " + d,
+    "settings.save": "Changed the guide links",
+    "check.tamper": "Tampering check: " + d
+  }[a];
+  return { text: m || (a + " " + d) };
+}
+async function loadActivity() {
+  const box = $("#actBody"); if (box) box.innerHTML = '<p class="muted">Loading activity…</p>';
+  try { ACT = await gs("getActivity"); } catch (e) { if ($("#actBody")) $("#actBody").innerHTML = `<p class="msg err">${esc(errText(e))}</p>`; return; }
+  renderActivity();
+}
+function actRows() {
+  if (!ACT) return [];
+  const q = actF.q.toLowerCase();
+  return ACT.rows.map(r => ({ at: r[0], email: r[1], role: r[2], action: r[3], detail: r[4], kind: actKind(r[3]), ...actText(r[3], r[4]) }))
+    .filter(r => (!actF.who || r.email === actF.who) && (!actF.kind || r.kind === actF.kind) && (!actF.from || r.at.slice(0, 10) >= actF.from) && (!actF.to || r.at.slice(0, 10) <= actF.to)
+      && (!q || (r.text + " " + r.detail + " " + r.email + " " + (ACT.names[r.email] || "")).toLowerCase().includes(q)));
+}
+function renderActivity() {
+  const box = $("#actBody"); if (!box || !ACT) return;
+  const rows = actRows(), who = [...new Set(ACT.rows.map(r => r[1]).filter(Boolean))].sort();
+  const nm = e => e ? (ACT.names[e] || e) : "";
+  box.innerHTML = `<div class="filters">
+      <input type="search" id="actQ" placeholder="Search activity" value="${esc(actF.q)}" aria-label="Search activity">
+      <select id="actWho" aria-label="Person"><option value="">Everyone</option>${who.map(e => `<option value="${esc(e)}" ${actF.who === e ? "selected" : ""}>${esc(nm(e))}</option>`).join("")}</select>
+      <select id="actKind" aria-label="Type"><option value="">All types</option>${ACT_KINDS.map(([k, l]) => `<option value="${k}" ${actF.kind === k ? "selected" : ""}>${esc(l)}</option>`).join("")}</select>
+      <label class="chk">From <input type="date" id="actFrom" value="${esc(actF.from)}"></label><label class="chk">To <input type="date" id="actTo" value="${esc(actF.to)}"></label>
+      <span class="count">${rows.length} of ${ACT.rows.length}</span></div>
+    ${ACT.note ? `<p class="msg err">${esc(ACT.note)}</p>` : ""}
+    ${rows.length ? `<div class="tablebox"><table><thead><tr><th>When</th><th>Who</th><th>What</th></tr></thead><tbody>${rows.slice(0, actF.n).map(r => `<tr><td class="mono" style="white-space:nowrap">${esc(r.at.slice(0, 16))}</td><td>${r.email ? esc(nm(r.email)) + (r.role && r.role !== "visitor" ? ` <span class="muted" style="font-size:12px">${esc(r.role)}</span>` : "") : '<span class="muted">—</span>'}</td><td>${esc(r.text)}${r.id ? ` ${data[r.key] && data[r.key].some(x => x._id === r.id) ? `<button class="idbtn" data-open="${esc(r.key)}|${esc(r.id)}">${esc(r.id)}</button>` : `<span class="mono">${esc(r.id)}</span>`}` : ""}</td></tr>`).join("")}</tbody></table></div>` : '<p class="muted">No activity matches.</p>'}
+    <div class="actions" style="margin-top:10px">${rows.length > actF.n ? `<button class="btn" id="actMore">Show 100 more</button>` : ""}<button class="btn" id="actCsv">Download these rows (CSV)</button>${ACT.url ? `<a class="btn" href="${esc(safeUrl(ACT.url))}" target="_blank" rel="noopener noreferrer">Open the full log in Google Sheets ↗</a>` : ""}<button class="btn" id="actRefresh">Refresh</button></div>
+    <p class="note" style="margin:8px 0 0">${esc(ACT.archiveNote)} Downloads of the data sheet go straight to Google, so they are not recorded.</p>`;
+  const set = (k, v) => { actF[k] = v; actF.n = 100; renderActivity(); };
+  $("#actQ").oninput = e => { actF.q = e.target.value; actF.n = 100; clearTimeout(window._actT); window._actT = setTimeout(() => { renderActivity(); const q = $("#actQ"); q.focus(); q.setSelectionRange(q.value.length, q.value.length); }, 250); };
+  $("#actWho").onchange = e => set("who", e.target.value); $("#actKind").onchange = e => set("kind", e.target.value);
+  $("#actFrom").onchange = e => set("from", e.target.value); $("#actTo").onchange = e => set("to", e.target.value);
+  if ($("#actMore")) $("#actMore").onclick = () => { actF.n += 100; renderActivity(); };
+  $("#actRefresh").onclick = loadActivity;
+  box.querySelectorAll("[data-open]").forEach(b => b.onclick = () => { const [k, id] = b.dataset.open.split("|"); openEditor(k, id); });
+  $("#actCsv").onclick = () => {
+    const q = v => { v = String(v ?? ""); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    const lines = [["when", "email", "name", "role", "what", "record_id", "action", "detail"].join(",")].concat(rows.map(r => [r.at, r.email, nm(r.email), r.role, r.text, r.id || "", r.action, r.detail].map(q).join(",")));
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["﻿" + lines.join("\n")], { type: "text/csv" }));
+    a.download = "Tobago_Event_Inventory_activity_" + new Date().toLocaleDateString("en-CA") + ".csv"; document.body.appendChild(a); a.click(); a.remove();
+  };
+}
+/* History box inside each record (every member). Loaded when opened. */
+const HIST_WORD = { "record.create": "Added", "record.save": "Edited", "record.delete": "Deleted", "record.recover": "Recovered", "photos.attach": "Attached WhatsApp photos" };
+function histHtml() { return `<details class="grp" id="edHist"><summary>History<span class="hint">Who added and changed this record</span></summary><div class="hist" style="padding:10px 14px"><p class="muted" style="margin:0">Loading…</p></div></details>`; }
+function wireHist(k, id) {
+  const d = $("#edHist"); if (!d) return;
+  d.addEventListener("toggle", async () => {
+    if (!d.open || d.dataset.done) return; d.dataset.done = "1";
+    const box = d.querySelector(".hist");
+    try {
+      const h = await gs("getHistory", k, id);
+      box.innerHTML = h.length ? `<ul class="plain">${h.map(x => `<li><span class="mono">${esc(x.at.slice(0, 16))}</span> · <b>${esc(x.name)}</b> · ${esc(HIST_WORD[x.action] || x.action)}</li>`).join("")}</ul>`
+        : `<p class="muted" style="margin:0">No changes recorded since the history started. ${(data[k].find(r => r._id === id) || {}).updated_by ? "Last saved by " + esc((data[k].find(r => r._id === id) || {}).updated_by) + "." : ""}</p>`;
+    } catch (e) { box.innerHTML = `<p class="msg err" style="margin:0">${esc(errText(e))}</p>`; }
+  });
+}
+
+/* ---------- data layer: Google Sheet via the Apps Script server ---------- */
+function gs(fn, ...args) {
+  return new Promise((resolve, reject) => google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[fn](...args));
+}
+function errText(e) { return String((e && e.message) || e || "Unknown error").replace(/^Exception:\s*/, ""); }
+function applyData(d) {
+  if (!d) return;
+  for (const c of S.cols) { data[c.key] = d[c.key] || []; loaded.add(c.key); }
+  if (!edState && tab !== "admin") render(); else { renderStrip(); renderTabs(); }   // the Admin tab refreshes itself
+}
+db = {
+  collection: k => ({
+    doc: id => ({
+      set: async body => applyData(await gs("saveDoc", k, id, body, "set")),
+      update: async body => applyData(await gs("saveDoc", k, id, body, "update")),
+      delete: async () => applyData(await gs("deleteDoc", k, id))
+    })
+  })
+};
+
+/* ---------- boot ---------- */
+render();
+gs("getBootstrap").then(b => {
+  ME = b.me; SETTINGS = b.settings || {}; SHEET = b.sheet; PHASE2 = b.phase >= 2; canWrite = b.canWrite; GIS_LAST = b.gisLast || null;
+  TABS = PHASE2 ? TABS_ALL : TABS_ALL.filter(t => !PHASE2_TABS.includes(t[0]));
+  if (ME.role === "admin") { TABS = TABS.concat([["admin", "Admin"]]); ADMIN_ALERTS = b.adminAlerts || 0; }
+  downloads = true;
+  $("#connBanner").hidden = true;
+  if (!canWrite) { $("#connBanner").hidden = false; $("#connBanner").textContent = "You have view-only access: you can read and download records but not change them."; }
+  $("#xlsBtn").hidden = false;
+  applyData(b.data);
+  setInterval(() => { if (!edState && document.visibilityState === "visible") gs("getData").then(applyData).catch(() => {}); }, 120000);
+}).catch(e => {
+  const t = errText(e);
+  if (t.indexOf("NOT_MEMBER:") >= 0) return renderAccess("member", t.split("NOT_MEMBER:")[1].trim());
+  if (t.indexOf("NO_ACCESS:") >= 0) return renderAccess("folder", t.split("NO_ACCESS:")[1].trim());
+  if (/^Who are you\?/.test(t)) return renderAccess("who");
+  $("#connBanner").className = "banner warn";
+  $("#connBanner").textContent = t.indexOf("NOT_MEMBER:") >= 0
+    ? "You are signed in as " + t.split("NOT_MEMBER:")[1] + ", which is not on the inventory's member list. Ask the Climate Unit admin to add you, or switch Google account."
+    : "The inventory could not be loaded: " + t + ". If this is the first time, the admin needs to share the inventory folder with you.";
+});
+</script>
+</body>
+</html>

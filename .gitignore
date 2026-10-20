@@ -1,0 +1,14 @@
+# Secrets and local config
+.clasp.json
+*_not_for_repo/
+ScriptProperties.txt
+
+# Data, exports and anything with personal data — never commit these
+*.xlsx
+*.gpkg
+*.csv
+*.pdf
+
+# OS / editor noise
+Thumbs.db
+.DS_Store
