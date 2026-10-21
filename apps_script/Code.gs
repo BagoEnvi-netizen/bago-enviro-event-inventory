@@ -70,9 +70,11 @@ function setup() {
   // The questions button now opens the inventory extract; the full log is Climate Unit only.
   readAll_('Settings').forEach(function (r) { if (r.key === 'questionsUrl' && String(r.value) === OLD_QUESTIONS_URL) st.getRange(r._row, 2).setValue(DEFAULT_SETTINGS.questionsUrl); });
 
-  // The person running setup is the first admin.
+  // The person running setup is the first admin, with a generated sign-in PIN.
+  let firstPin = '';
   if (!readAll_('Members').some(function (m) { return lc_(m.email) === lc_(me); })) {
-    append_('Members', { email: lc_(me), name: 'Inventory admin', role: 'admin', position: '', team: 'Climate Unit' });
+    firstPin = newPin_();
+    append_('Members', { email: lc_(me), name: 'Inventory admin', role: 'admin', position: '', team: 'Climate Unit', pin: firstPin });
   }
   props.setProperty('OWNER_EMAIL', lc_(me));
   syncAdmins_();
@@ -94,6 +96,7 @@ function setup() {
   try { protectMembers_(); } catch (e) {}
 
   Logger.log('Setup complete.');
+  if (firstPin) Logger.log('FIRST ADMIN SIGN-IN PIN for ' + lc_(me) + ': ' + firstPin + '  (change it in the Admin tab of the app, or in the Members tab of the data sheet.)');
   Logger.log('Inventory folder (share this with the team): ' + root.getUrl());
   Logger.log('Data sheet: ' + ss.getUrl());
   Logger.log('Restricted WhatsApp folder (share with Climate Unit members only): ' + rfUrl);
@@ -121,7 +124,7 @@ function tabSpecs_() {
   });
   out.push({ name: LINK_SHEET, headers: ['event_id', 'source_id', 'linked_at'], note: 'One row per link between an event and a source. Kept by the web app.' });
   out.push({ name: 'Lookups', headers: ['list', 'value', 'order'], note: 'Allowed values for each drop-down. Change only by team decision.' });
-  out.push({ name: 'Members', headers: ['email', 'name', 'role', 'position', 'team', 'removed_at', 'removed_by'], note: 'role: admin, editor, viewer or removed. team: Climate Unit, Coastal Unit or Other. Only active people listed here can open the inventory. Managed from the Admin tab of the web app; only the owner and admins can edit this tab.' });
+  out.push({ name: 'Members', headers: ['email', 'name', 'role', 'position', 'team', 'pin', 'removed_at', 'removed_by'], note: 'role: admin, editor, viewer or removed. team: Climate Unit, Coastal Unit or Other. pin: the member\'s sign-in PIN for the web app (set it when you add them). Only active people listed here can open the inventory. Managed from the Admin tab of the web app; only the owner and admins can edit this tab.' });
   out.push({ name: 'Settings', headers: ['key', 'value'], note: 'Links shown on the How-to guide tab.' });
   out.push({ name: 'History', headers: ['at', 'email', 'action', 'record_type', 'record_id'], note: 'Who added, edited, deleted or recovered each record. Shown in the History box of each record. Written by the web app; do not edit. The full activity log (members, access, sign-ins) is kept separately and only admins can open it.' });
   return out;
@@ -149,21 +152,91 @@ function ensureTab_(ss, name, headers, note) {
 }
 
 /* =========================================================================
- * WEB APP ENTRY
+ * WEB APP ENTRY — JSON API for the statically-hosted page.
+ * The page is served from GitHub Pages (or any static host); it calls this
+ * API with plain fetch() POSTs (Content-Type text/plain, so no CORS preflight).
+ * The deployment is "Execute as: Me" + "Anyone": no Google sign-in is ever
+ * asked of visitors. Identity = email + PIN checked against the Members tab;
+ * a successful login returns a token kept server-side for 6 hours.
  * ========================================================================= */
 
+var API_MEMBER_ = null;   // identity for the current routed call (null outside the API)
+
+var API_OPEN_ = ['login', 'myAccessRequest', 'requestAccess'];   // callable without a token
+var API_ACTIONS_ = API_OPEN_.concat([
+  'getBootstrap', 'getData', 'createDoc', 'saveDoc', 'deleteDoc', 'recoverRecord',
+  'getHistory', 'getActivity', 'getAdminView', 'saveMember', 'removeMember',
+  'declineRequest', 'saveSettings', 'purgeDeleted', 'deleteExamples',
+  'attachPhotos', 'exportGisCsv'
+]);
+
 function doGet() {
-  const t = HtmlService.createTemplateFromFile('Index');
-  let schema;
-  try { schema = schemaWithLookups_(); } catch (e) { schema = SCHEMA; }   // lists from the Lookups tab when readable
-  t.schemaJson = JSON.stringify(schema).replace(/</g, '\\u003c').replace(/\//g, '\\/');   // escape every slash: HtmlService's server-side // comment-stripper would otherwise cut the inlined JSON mid-string (help texts contain https://)
-  return t.evaluate()
-    .setTitle(APP_NAME)
-    .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  return ContentService.createTextOutput(JSON.stringify({ ok: true, app: APP_NAME, api: 2 }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  try {
+    const req = JSON.parse(e.postData.contents || '{}');
+    const action = String(req.a || '');
+    if (API_ACTIONS_.indexOf(action) < 0) throw new Error('Unknown action: ' + action);
+    if (action === 'login') return apiOut_(null, login_(String(req.email || ''), String(req.pin || '')));
+    if (API_OPEN_.indexOf(action) >= 0) return apiOut_(null, this[action].apply(null, req.args || []));
+    const me = memberForToken_(req.t);
+    if (!me) throw new Error('AUTH:Your sign-in has expired. Sign in again.');
+    API_MEMBER_ = me;
+    try { return apiOut_(null, this[action].apply(null, req.args || [])); }
+    finally { API_MEMBER_ = null; }
+  } catch (err) {
+    return apiOut_(err);
+  }
+}
+
+function apiOut_(err, result) {
+  const body = err ? { ok: false, error: String((err && err.message) || err) } : { ok: true, r: result === undefined ? null : result };
+  return ContentService.createTextOutput(JSON.stringify(body)).setMimeType(ContentService.MimeType.JSON);
+}
+
+/** Email + PIN sign-in. Returns {token, me}. Tokens live 6 hours server-side. */
+function login_(email, pin) {
+  email = lc_(clip_(email, 200));
+  const cache = CacheService.getScriptCache();
+  const thKey = 'lg:' + email;
+  const tries = Number(cache.get(thKey) || 0);
+  if (tries >= 10) throw new Error('Too many sign-in attempts. Wait 10 minutes and try again.');
+  const rows = readAll_('Members');
+  const m = rows.filter(function (r) { return lc_(r.email) === email && activeMember_(r); })[0];
+  const ok = m && String(m.pin || '') && String(m.pin) === pin;
+  if (!ok) {
+    cache.put(thKey, String(tries + 1), 600);
+    audit_(null, 'auth.badpin', email);
+    if (!m) throw new Error('NOT_MEMBER:' + email);
+    throw new Error('Wrong PIN for ' + email + '. Check with the admin, or try again.');
+  }
+  cache.remove(thKey);
+  const token = Utilities.getUuid();
+  cache.put('tok:' + token, JSON.stringify({ email: email, name: String(m.name || ''), role: lc_(m.role) || 'editor', team: String(m.team || ''), position: String(m.position || '') }), 21600);
+  audit_({ email: email, role: lc_(m.role) || 'editor' }, 'auth.login', '');
+  return { token: token, me: { email: email, name: String(m.name || ''), role: lc_(m.role) || 'editor', team: String(m.team || ''), position: String(m.position || '') } };
+}
+
+function memberForToken_(token) {
+  if (!token) return null;
+  const raw = CacheService.getScriptCache().get('tok:' + String(token));
+  if (!raw) return null;
+  try { return JSON.parse(raw); } catch (e) { return null; }
+}
+
+/** Six-character sign-in PIN (no ambiguous characters). */
+function newPin_() {
+  const abc = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let s = '';
+  for (let i = 0; i < 6; i++) s += abc[Math.floor(Math.random() * abc.length)];
+  return s;
 }
 
 /* =========================================================================
- * API — called from the page via google.script.run
+ * API — called from the static page via fetch() POST to doPost (see the WEB APP ENTRY section)
  * ========================================================================= */
 
 function getBootstrap() {
@@ -610,8 +683,10 @@ function withLock_(fn) {
 }
 
 function requireMember_() {
-  // Never fall back to getEffectiveUser(): if this app is ever redeployed "Execute as: Me",
-  // that fallback would silently identify every visitor as the deployer — the exact failure
+  // API path: identity established by token at the router.
+  if (API_MEMBER_) return API_MEMBER_;
+  // Editor/trigger path. Never fall back to getEffectiveUser(): if this app is ever redeployed
+  // "Execute as: Me", that fallback would silently identify every visitor as the deployer — the exact failure
   // the Commons had (visitors see and act as the owner). Fail closed instead.
   const active = Session.getActiveUser().getEmail();
   if (!active) throw new Error('Who are you? Your Google account couldn\'t be identified. Sign out of other Google accounts, allow third-party cookies for this site, then reload.');
@@ -762,17 +837,17 @@ function saveRequests_(list) {
   PropertiesService.getScriptProperties().setProperty('ACCESS_REQUESTS', JSON.stringify(done.concat(pending)));
 }
 
-/** For the "Ask for access" screen: the signed-in person's pending request, if any. Open to anyone with a Google account. */
-function myAccessRequest() {
-  const email = lc_(Session.getActiveUser().getEmail());
+/** For the "Ask for access" screen: the pending request of the given (or signed-in) email, if any. */
+function myAccessRequest(email) {
+  email = lc_(clip_(email, 200)) || lc_(Session.getActiveUser().getEmail());
   if (!email) return null;
   return requests_().filter(function (r) { return r.email === email && r.status === 'Pending'; })[0] || null;
 }
 
 /** Ask for access (anyone not yet a member, including Coastal Unit viewers). Emails the admins. */
-function requestAccess(name, team, note) {
-  const email = lc_(Session.getActiveUser().getEmail());
-  if (!email) throw new Error('Who are you? Your Google account couldn\'t be identified. Sign out of other Google accounts, then reload.');
+function requestAccess(name, team, note, email) {
+  email = lc_(clip_(email, 200)) || lc_(Session.getActiveUser().getEmail());
+  if (!email) throw new Error('Who are you? Your email couldn\'t be identified. Reload and try again.');
   name = clip_(name, 80); note = clip_(note, 300);
   if (!name) throw new Error('Please give your name.');
   if (TEAMS.indexOf(team) < 0) team = 'Other';
@@ -853,7 +928,7 @@ function shareInventory_(email, role) {
   } catch (e) { return 'The inventory folder could not be shared with ' + email + ' (' + e.message + '). Share it in Drive: ' + (role === 'viewer' ? 'Viewer' : 'Editor') + '.'; }
 }
 
-/** Add a member, or change an existing member's name, role, team or position. m = {email,name,role,team,position,requestId} */
+/** Add a member, or change an existing member's name, role, team, position or PIN. m = {email,name,role,team,position,pin,requestId} */
 function saveMember(m) {
   const me = requireAdmin_();
   const email = lc_(m && m.email);
@@ -863,6 +938,7 @@ function saveMember(m) {
   const team = TEAMS.indexOf(m.team) >= 0 ? m.team : '';
   if (!team) throw new Error('Choose a team.');
   const name = clip_(m.name, 80) || email.split('@')[0], position = clip_(m.position, 80);
+  const pin = m.pin ? clip_(String(m.pin), 40) : '';   // empty = leave the current PIN unchanged
   const warnings = [];
   const result = withLock_(function () {
     const rows = readAll_('Members');
@@ -878,11 +954,16 @@ function saveMember(m) {
     const w = shareInventory_(email, role); if (w) warnings.push(w);
     const sh = sheet_('Members'), head = headers_(sh);
     const obj = { email: email, name: name, role: role, team: team, position: position, removed_at: '', removed_by: '' };
+    if (pin) obj.pin = pin;
+    let generatedPin = '';
     if (row) {
       const vals = sh.getRange(row._row, 1, 1, head.length).getValues()[0];
       head.forEach(function (h, j) { if (obj.hasOwnProperty(h)) vals[j] = cell_(obj[h]); });
       sh.getRange(row._row, 1, 1, head.length).setValues([vals]);
-    } else append_('Members', obj);
+    } else {
+      if (!obj.pin) { generatedPin = newPin_(); obj.pin = generatedPin; }
+      append_('Members', obj);
+    }
     syncAdmins_();
     try { syncLogSharing_(); } catch (e) { warnings.push('Activity log sharing could not be updated (' + e.message + '). It is re-applied on Sunday.'); }
     try { protectMembers_(); } catch (e) { warnings.push('The Members tab lock could not be updated (' + e.message + '). It is re-applied on Sunday, or the owner can run setup.'); }
@@ -892,9 +973,9 @@ function saveMember(m) {
     if (closed) saveRequests_(list);
     if (team !== 'Climate Unit') warnings.push('Reminder: never share the restricted WhatsApp folder with ' + name + ' (' + team + ').');
     audit_(me, wasActive ? 'member.update' : 'member.add', email + ' role=' + role + ' team=' + team + (wasActive && oldRole !== role ? ' (was ' + oldRole + ')' : ''));
-    return true;
+    return { generatedPin: generatedPin };
   });
-  return { ok: result, warnings: warnings, view: adminView_(me) };
+  return { ok: true, warnings: warnings, view: adminView_(me), newPin: result.generatedPin || '' };
 }
 
 /** Remove a member: kept on the tab as role "removed" (so names on old records still make sense), folder access taken away. */

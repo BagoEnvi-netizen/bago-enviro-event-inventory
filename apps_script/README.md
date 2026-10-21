@@ -1,16 +1,15 @@
 # Tobago Event Inventory: Apps Script source
 
-This is the code of the live inventory: a Google Apps Script web app with a Google Sheet behind it.
+This is the API of the live inventory: a Google Apps Script project (JSON API) with a Google Sheet behind it. The page itself lives at the repo root (`index.html` + `config.js`) and is hosted on GitHub Pages — see SETUP.md for the architecture.
 
 It was recovered on 19 October 2026 from the Tobago Event Inventory preview page (https://claude.ai/artifact/N4jETMeaxS3PtBfv6zmjYM, version of 14 October). The preview runs this same code against stand-in Google services.
 
 | File | What it is |
 |---|---|
-| Code.gs | The web app: setup(), members and access, saving records, history, activity log, soft delete and purgeDeleted(), weekly GIS export and weekly maintenance. |
+| Code.gs | The API: setup(), login/PIN tokens, the doPost router, members and access, saving records, history, activity log, soft delete and purgeDeleted(), weekly GIS export and weekly maintenance. |
 | Schema.gs | Every tab, field, help text and drop-down list (SCHEMA). The workbook build (events/build.py) follows this field list. |
 | Seed.gs | The fictional training examples (SEED). Load with seedExamples(). |
-| Index.html | The page. `doGet()` fills `<?!= schemaJson ?>` with the field list and the Lookups tab. |
-| appsscript.json | The project manifest: Port of Spain time zone, V8, runs as the person using it (*User accessing the web app*, *Anyone with Google account*). Taken unchanged from the 13 October (v1) folder; it still fits the current code. |
+| appsscript.json | The project manifest: Port of Spain time zone, V8. The deployment is *Execute as: Me* + *Anyone* — safe because every action needs a login token (email + PIN). Taken unchanged from the 13 October (v1) folder. |
 | SETUP.md | Install and update steps for the current code (20 October). Replaces the v1 guide, which did not cover the Admin tab, the activity log, soft delete or the weekly maintenance. The step numbers match the ones the Admin tab's Housekeeping panel refers to (step 7 GIS export, step 8 weekly maintenance). |
 
 ## What was changed when recovering it

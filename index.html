@@ -4,6 +4,7 @@
 <title>Tobago Event Inventory</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@80..100,500..800&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<script src="config.js"></script>
 </head>
 <body>
 <style>
@@ -220,17 +221,23 @@ ul.plain{list-style:none;margin:0;padding:0}ul.plain li{padding:7px 0;border-bot
 <div id="edroot"></div>
 
 <script>
-const S = <?!= schemaJson ?>;
+let S = null, COLS = {}, DETAIL = [];
 let GIS_LAST = null, PHASE2 = false, ME = { name: "", email: "", role: "" }, SETTINGS = {}, SHEET = { id: "", gids: {}, names: {} };
-const COLS = Object.fromEntries(S.cols.map(c => [c.key, c]));
 const PNAME = {"1":"Essential (Tier 1)","2":"Recommended","3":"Loss & damage extension"};
 const PHINT = {"1":"Fill for every record","2":"Fill when the information is known","3":"Significant events only (see the significant field on Events; interim rule until I4 is settled); not needed for Tier 1"};
-const DETAIL = S.cols.filter(c => c.detail).map(c => c.key);
 const TABS_ALL = [["help","How-to guide"],["overview","Overview"],["events","Events"],["sources","Sources"],["field_checks","Field checks"],["hazardous_events","Hazardous events"],["met_ids","Met Service IDs"],["slow_onset","Slow-onset"],["detail","Loss & damage detail"],["guide","How it feeds the CRVA"]];
 const PHASE2_TABS = ["met_ids","slow_onset","detail"];
 let TABS = TABS_ALL.filter(t => !PHASE2_TABS.includes(t[0]));
-const data = Object.fromEntries(S.cols.map(c => [c.key, []]));
+const data = {};
 const loaded = new Set();
+/* Called once with the schema from getBootstrap (the page is static: nothing is templated in). */
+function initFromSchema(s) {
+  S = s;
+  for (const k of Object.keys(COLS)) delete COLS[k];
+  Object.assign(COLS, Object.fromEntries(S.cols.map(c => [c.key, c])));
+  DETAIL = S.cols.filter(c => c.detail).map(c => c.key);
+  for (const c of S.cols) if (!(c.key in data)) data[c.key] = [];
+}
 let db = null, downloads = null, canWrite = true, tab = "overview", detailKey = "human_effects", showEx = true;
 const filt = {q:"", type:"", parish:"", ver:"", sg:"list"};
 const $ = s => document.querySelector(s);
@@ -874,11 +881,12 @@ function renderAdmin() {
   const f = adminForm;
   const formCard = f ? `<div class="card" id="memForm"><h2>${f.existing ? "Change " + esc(f.name || f.email) : "Add a member"}</h2>
     <div class="fields" style="padding:0">
-      <div class="fld"><label for="m_email">Email (Google account)<span class="req">*</span></label><input id="m_email" type="email" value="${esc(f.email || "")}" ${f.existing ? "readonly" : ""}></div>
+      <div class="fld"><label for="m_email">Email<span class="req">*</span></label><input id="m_email" type="email" value="${esc(f.email || "")}" ${f.existing ? "readonly" : ""}></div>
       <div class="fld"><label for="m_name">Name<span class="req">*</span></label><input id="m_name" value="${esc(f.name || "")}"></div>
       <div class="fld"><label for="m_role">Role<span class="req">*</span></label><select id="m_role">${["admin","editor","viewer"].map(r => `<option value="${r}" ${f.role === r ? "selected" : ""}>${esc(ROLE_HELP[r])}</option>`).join("")}</select></div>
       <div class="fld"><label for="m_team">Team<span class="req">*</span></label><select id="m_team">${TEAM_LIST.map(t => `<option ${f.team === t ? "selected" : ""}>${esc(t)}</option>`).join("")}</select><span class="help">Only Climate Unit members may ever be given the restricted WhatsApp folder.</span></div>
       <div class="fld"><label for="m_pos">Position</label><input id="m_pos" value="${esc(f.position || "")}" placeholder="e.g. Senior Policy Analyst"></div>
+      <div class="fld"><label for="m_pin">Sign-in PIN</label><input id="m_pin" value="" placeholder="${f.existing ? "Leave blank to keep the current PIN" : "Leave blank to generate one"}" autocomplete="off"></div>
     </div>
     <p class="note" id="m_hint" style="margin:10px 0 0"></p>
     <div class="actions" style="margin-top:12px"><button class="btn primary" id="m_save">${f.existing ? "Save changes" : "Add and share the folder"}</button><button class="btn" id="m_cancel">Cancel</button><span class="msg" id="m_msg"></span></div></div>` : "";
@@ -947,10 +955,13 @@ function wireAdmin() {
     $("#m_team").onchange = hint; $("#m_role").onchange = hint; hint();
     $("#m_cancel").onclick = () => { adminForm = null; renderAdmin(); };
     $("#m_save").onclick = async () => {
-      const m = { email: $("#m_email").value.trim(), name: $("#m_name").value.trim(), role: $("#m_role").value, team: $("#m_team").value, position: $("#m_pos").value.trim(), requestId: adminForm.requestId || "" };
+      const m = { email: $("#m_email").value.trim(), name: $("#m_name").value.trim(), role: $("#m_role").value, team: $("#m_team").value, position: $("#m_pos").value.trim(), pin: $("#m_pin").value.trim(), requestId: adminForm.requestId || "" };
       if (!m.email || !m.name) { $("#m_msg").className = "msg err"; $("#m_msg").textContent = "Email and name are needed."; return; }
       $("#m_save").disabled = true; $("#m_msg").className = "msg"; $("#m_msg").textContent = "Saving and sharing…";
-      try { adminDone(await gs("saveMember", m), adminForm.existing ? "Saved." : m.name + " added as " + m.role + ". Google Drive emails them that the folder is shared."); }
+      try {
+        const r = await gs("saveMember", m);
+        adminDone(r, (r.newPin ? "Sign-in PIN for " + m.email + ": " + r.newPin + " — give it to them along with the app link. " : "") + (adminForm.existing ? "Saved." : m.name + " added as " + m.role + "."));
+      }
       catch (e) { $("#m_save").disabled = false; $("#m_msg").className = "msg err"; $("#m_msg").textContent = errText(e); }
     };
   }
@@ -965,11 +976,11 @@ async function renderAccess(kind, email) {
     $("#main").innerHTML = `<div class="card access"><h2>We can't tell who you are</h2><p>Google didn't tell the inventory which account you're signed in with. This usually happens when you're signed in to more than one Google account.</p><ol><li>Sign out of your other Google accounts, or open this link in a private window and sign in with your work account.</li><li>Reload this page.</li></ol></div>`;
     return;
   }
-  let mine = null; try { mine = await gs("myAccessRequest"); } catch (e) {}
-  const lead = kind === "member" ? `You're signed in as <b class="mono">${esc(email)}</b>, which isn't on the inventory's member list.` : `You're signed in as <b class="mono">${esc(email)}</b>, but the inventory folder isn't shared with you yet.`;
-  const done = r => `<div class="callout" role="status"><b>Request sent${r && r.at ? " on " + esc(fmtDay(r.at)) : ""}.</b> An admin will add you, and Google Drive will email you when the inventory folder is shared. Then reload this page.</div>`;
+  let mine = null; try { mine = await gs("myAccessRequest", email); } catch (e) {}
+  const lead = kind === "member" ? `The email <b class="mono">${esc(email)}</b> isn't on the inventory's member list yet.` : `The email <b class="mono">${esc(email)}</b> isn't on the inventory's member list yet.`;
+  const done = r => `<div class="callout" role="status"><b>Request sent${r && r.at ? " on " + esc(fmtDay(r.at)) : ""}.</b> An admin will add you and give you a sign-in PIN.</div>`;
   $("#main").innerHTML = `<div class="card access"><h2>Ask for access</h2><p>${lead} The inventory is the Climate Unit's record of hazard events. Partners such as the Coastal Unit can be given view access.</p>
-    <p class="note">Wrong account? Sign in with the right one and reload.</p>
+    <p class="note">Wrong email? <a href="#" id="a_back">Back to sign in</a>.</p>
     ${mine ? done(mine) : `<div class="fields" style="padding:0">
       <div class="fld"><label for="a_name">Your name<span class="req">*</span></label><input id="a_name" autocomplete="name"></div>
       <div class="fld"><label for="a_team">Your team<span class="req">*</span></label><select id="a_team">${TEAM_LIST.map(t => `<option>${esc(t)}</option>`).join("")}</select></div>
@@ -978,10 +989,11 @@ async function renderAccess(kind, email) {
   if (!mine) $("#a_send").onclick = async () => {
     const n = $("#a_name").value.trim(); if (!n) { $("#a_msg").className = "msg err"; $("#a_msg").textContent = "Please give your name."; return; }
     $("#a_send").disabled = true; $("#a_msg").className = "msg"; $("#a_msg").textContent = "Sending…";
-    try { const r = await gs("requestAccess", n, $("#a_team").value, $("#a_note").value.trim());
+    try { const r = await gs("requestAccess", n, $("#a_team").value, $("#a_note").value.trim(), email);
       $("#a_send").closest(".actions").outerHTML = done(r); document.querySelectorAll(".access .fields").forEach(x => x.remove()); }
     catch (e) { $("#a_send").disabled = false; $("#a_msg").className = "msg err"; $("#a_msg").textContent = errText(e); }
   };
+  const back = $("#a_back"); if (back) back.onclick = ev => { ev.preventDefault(); showLogin("", ""); };
 }
 
 /* ---------- Activity list (admins) and History box (everyone) ---------- */
@@ -1071,9 +1083,18 @@ function wireHist(k, id) {
   });
 }
 
-/* ---------- data layer: Google Sheet via the Apps Script server ---------- */
-function gs(fn, ...args) {
-  return new Promise((resolve, reject) => google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[fn](...args));
+/* ---------- data layer: JSON API on the Apps Script project (see config.js for API_URL) ---------- */
+const eiToken = () => localStorage.getItem("ei_token") || "";
+function setToken(t) { if (t) localStorage.setItem("ei_token", t); else localStorage.removeItem("ei_token"); }
+async function gs(fn, ...args) {
+  let res;
+  try {
+    res = await fetch(API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ a: fn, t: eiToken(), args }) });
+  } catch (e) { throw new Error("Cannot reach the inventory server. Check your connection and reload."); }
+  let body;
+  try { body = await res.json(); } catch (e) { throw new Error("The inventory server answered unexpectedly (" + res.status + "). Reload and try again."); }
+  if (!body.ok) throw new Error(body.error || "Unknown server error");
+  return body.r;
 }
 function errText(e) { return String((e && e.message) || e || "Unknown error").replace(/^Exception:\s*/, ""); }
 function applyData(d) {
@@ -1091,28 +1112,61 @@ db = {
   })
 };
 
-/* ---------- boot ---------- */
-render();
-gs("getBootstrap").then(b => {
-  ME = b.me; SETTINGS = b.settings || {}; SHEET = b.sheet; PHASE2 = b.phase >= 2; canWrite = b.canWrite; GIS_LAST = b.gisLast || null;
-  TABS = PHASE2 ? TABS_ALL : TABS_ALL.filter(t => !PHASE2_TABS.includes(t[0]));
-  if (ME.role === "admin") { TABS = TABS.concat([["admin", "Admin"]]); ADMIN_ALERTS = b.adminAlerts || 0; }
-  downloads = true;
-  $("#connBanner").hidden = true;
-  if (!canWrite) { $("#connBanner").hidden = false; $("#connBanner").textContent = "You have view-only access: you can read and download records but not change them."; }
-  $("#xlsBtn").hidden = false;
-  applyData(b.data);
-  setInterval(() => { if (!edState && document.visibilityState === "visible") gs("getData").then(applyData).catch(() => {}); }, 120000);
-}).catch(e => {
-  const t = errText(e);
-  if (t.indexOf("NOT_MEMBER:") >= 0) return renderAccess("member", t.split("NOT_MEMBER:")[1].trim());
-  if (t.indexOf("NO_ACCESS:") >= 0) return renderAccess("folder", t.split("NO_ACCESS:")[1].trim());
-  if (/^Who are you\?/.test(t)) return renderAccess("who");
-  $("#connBanner").className = "banner warn";
-  $("#connBanner").textContent = t.indexOf("NOT_MEMBER:") >= 0
-    ? "You are signed in as " + t.split("NOT_MEMBER:")[1] + ", which is not on the inventory's member list. Ask the Climate Unit admin to add you, or switch Google account."
-    : "The inventory could not be loaded: " + t + ". If this is the first time, the admin needs to share the inventory folder with you.";
-});
+/* ---------- boot: sign in, then load ---------- */
+function showLogin(msg, email) {
+  ["#strip", "#tabs", "#connBanner"].forEach(x => { const el = $(x); if (el) el.style.display = "none"; });
+  ["#csvBtn", "#xlsBtn", "#addBtn"].forEach(s => { const el = $(s); if (el) el.hidden = true; });
+  $("#main").innerHTML = `<div class="card access" style="max-width:460px;margin:40px auto"><h2>Sign in · Tobago Event Inventory</h2>
+    <p>The Climate Unit's record of hazard events, their impacts and losses. Members sign in with the email and PIN given by the admin.</p>
+    ${msg ? `<p class="msg err">${esc(msg)}</p>` : ""}
+    <div class="fields" style="padding:0">
+      <div class="fld wide"><label for="l_email">Email</label><input id="l_email" type="email" autocomplete="username" value="${esc(email || "")}"></div>
+      <div class="fld wide"><label for="l_pin">PIN</label><input id="l_pin" type="password" autocomplete="current-password" placeholder="e.g. K7P2QX"></div></div>
+    <div class="actions" style="margin-top:12px"><button class="btn primary" id="l_go">Sign in</button><span class="msg" id="l_msg"></span></div>
+    <p class="note" style="margin-top:14px">Not a member yet? Ask the Climate Unit admin for access. Your sign-in lasts 6 hours on this device.</p></div>`;
+  const go = async () => {
+    const em = $("#l_email").value.trim(), pin = $("#l_pin").value.trim();
+    if (!em || !pin) { $("#l_msg").className = "msg err"; $("#l_msg").textContent = "Enter your email and PIN."; return; }
+    $("#l_go").disabled = true; $("#l_msg").className = "msg"; $("#l_msg").textContent = "Signing in…";
+    try {
+      const r = await gs("login", em, pin);
+      setToken(r.token);
+      ME = { name: r.me.name, email: r.me.email, role: r.me.role };
+      boot();
+    } catch (e) {
+      const t = errText(e);
+      if (t.indexOf("NOT_MEMBER:") >= 0) return renderAccess("member", t.split("NOT_MEMBER:")[1].trim());
+      $("#l_go").disabled = false; $("#l_msg").className = "msg err"; $("#l_msg").textContent = t;
+    }
+  };
+  $("#l_go").onclick = go;
+  $("#l_pin").addEventListener("keydown", e => { if (e.key === "Enter") go(); });
+  $("#l_email").addEventListener("keydown", e => { if (e.key === "Enter") $("#l_pin").focus(); });
+  ($("#l_email").value ? $("#l_pin") : $("#l_email")).focus();
+}
+function boot() {
+  gs("getBootstrap").then(b => {
+    initFromSchema(b.schema);
+    ME = b.me; SETTINGS = b.settings || {}; SHEET = b.sheet; PHASE2 = b.phase >= 2; canWrite = b.canWrite; GIS_LAST = b.gisLast || null;
+    TABS = PHASE2 ? TABS_ALL : TABS_ALL.filter(t => !PHASE2_TABS.includes(t[0]));
+    if (ME.role === "admin") { TABS = TABS.concat([["admin", "Admin"]]); ADMIN_ALERTS = b.adminAlerts || 0; }
+    downloads = true;
+    $("#connBanner").hidden = true;
+    if (!canWrite) { $("#connBanner").hidden = false; $("#connBanner").textContent = "You have view-only access: you can read and download records but not change them."; }
+    $("#xlsBtn").hidden = false;
+    render();
+    applyData(b.data);
+    setInterval(() => { if (!edState && document.visibilityState === "visible") gs("getData").then(applyData).catch(() => {}); }, 120000);
+  }).catch(e => {
+    const t = errText(e);
+    if (/^AUTH:/.test(t)) { setToken(""); return showLogin(t.replace(/^AUTH:/, ""), ME.email); }
+    if (t.indexOf("NOT_MEMBER:") >= 0) { setToken(""); return renderAccess("member", t.split("NOT_MEMBER:")[1].trim()); }
+    $("#connBanner").className = "banner warn";
+    $("#connBanner").textContent = "The inventory could not be loaded: " + t + ". Reload to try again.";
+    $("#connBanner").hidden = false;
+  });
+}
+if (eiToken()) boot(); else showLogin();
 </script>
 </body>
 </html>
