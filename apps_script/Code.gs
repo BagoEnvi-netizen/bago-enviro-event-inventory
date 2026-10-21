@@ -235,6 +235,20 @@ function newPin_() {
   return s;
 }
 
+/** Editor utility: set a fresh sign-in PIN for the person running it (owner/admin). Run, then read the log. */
+function resetMyPin() {
+  const me = lc_(Session.getEffectiveUser().getEmail());
+  const pin = newPin_();
+  const rows = readAll_('Members');
+  const row = rows.filter(function (r) { return lc_(r.email) === me; })[0];
+  const sh = sheet_('Members');
+  if (headers_(sh).indexOf('pin') < 0) sh.getRange(1, sh.getLastColumn() + 1).setValue('pin').setFontWeight('bold');
+  const pinCol = headers_(sh).indexOf('pin') + 1;
+  if (row) sh.getRange(row._row, pinCol).setValue(pin);
+  else append_('Members', { email: me, name: 'Inventory admin', role: 'admin', position: '', team: 'Climate Unit', pin: pin });
+  Logger.log('SIGN-IN PIN for ' + me + ': ' + pin);
+}
+
 /* =========================================================================
  * API — called from the static page via fetch() POST to doPost (see the WEB APP ENTRY section)
  * ========================================================================= */
