@@ -22,10 +22,10 @@ See `apps_script/README.md` for what each file is and `apps_script/SETUP.md` for
 1. **Create `.clasp.json` in this folder** (it is gitignored) with the live project's scriptId:
 
    ```json
-   { "scriptId": "PASTE-EVENT-INVENTORY-SCRIPT-ID-HERE", "rootDir": "apps_script" }
+   { "scriptId": "1I3Q3K65B4b3x0BYO2rNJBba59SzSsW71MP0mnNaO42gKSmWKF9jTDYcV", "rootDir": "apps_script" }
    ```
 
-   The scriptId is in the Apps Script editor: **Project Settings → IDs → Script ID**, signed in as bagoenvi.research@gmail.com. `clasp list` on this machine already shows the Commons project, so clasp auth is done.
+   This is the ID of the live project "Bago Enviro Event Inventory" (v3). Signed in as bagoenvi.research@gmail.com. `clasp list` on this machine already shows the Commons project, so clasp auth is done. (A `.clasp.json` with this ID already exists in this folder on the build machine.)
 
 2. `clasp push` uploads everything in `apps_script/` (`.gs`, `.html`, `appsscript.json`). `.md` files stay repo-only.
 
@@ -42,3 +42,6 @@ See `apps_script/README.md` for what each file is and `apps_script/SETUP.md` for
 ## Status
 
 - Code baseline: Apps Script version of 14 October 2026 (recovered 19 October), plus **SLS ("Severe local storm") added to the trigger and he_hazard lists, mapped Climate-related** (concern C1, agreed change 3a, 20 October 2026).
+- **Live project: "Bago Enviro Event Inventory" (v3)**, scriptId `1I3Q3K65B4b3x0BYO2rNJBba59SzSsW71MP0mnNaO42gKSmWKF9jTDYcV`, web app `https://script.google.com/macros/s/AKfycbyHpiU8dJp7Rygh92fneWPsWwEQH_BdL8t75kPRnkLCRH_jASPGk2GzyxY-ZcrXSynW/exec`. All 5 files pushed, deployment @1. **Not yet live-checked**: `setup` and `seedExamples` still need to be run in the editor, and deployment access needs to be "Anyone with a Google account" for team members.
+- **Known platform issue:** on first visit the Google consent dialog intermittently renders broken (`userCodeAppPanel …AuthDialog=true Uncaught SyntaxError: Unexpected identifier 'id'` — Google issue tracker 541915740). It is a Google-side race, unrelated to our code; retrying the `/exec` URL until the dialog renders is the workaround, and one successful grant is permanent per user.
+- Superseded test projects v1 and v2 and the "EI Dialog Test" project are queued for deletion — see `BUILD-DECISIONS.md`.
