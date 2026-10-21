@@ -156,7 +156,7 @@ function doGet() {
   const t = HtmlService.createTemplateFromFile('Index');
   let schema;
   try { schema = schemaWithLookups_(); } catch (e) { schema = SCHEMA; }   // lists from the Lookups tab when readable
-  t.schemaJson = JSON.stringify(schema).replace(/</g, '\\u003c');
+  t.schemaJson = JSON.stringify(schema).replace(/</g, '\\u003c').replace(/\//g, '\\/');   // escape every slash: HtmlService's server-side // comment-stripper would otherwise cut the inlined JSON mid-string (help texts contain https://)
   return t.evaluate()
     .setTitle(APP_NAME)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1');
