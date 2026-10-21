@@ -594,7 +594,7 @@ function fieldHtml(c, f, r, isNew) {
   } else if (f.t === "list") {
     input = `<select id="${id}" ${canWrite ? "" : "disabled"}><option value=""></option>${(S.look[f.l] || []).map(o => `<option ${o === v ? "selected" : ""}>${esc(o)}</option>`).join("")}</select>`;
   } else if (f.t === "url") {
-    input = `<div class="urlrow"><input id="${id}" type="url" inputmode="url" placeholder="https://" ${canWrite ? "" : "readonly"} value="${esc(v)}"><span id="${id}_open">${linkHtml(v, "Open")}</span></div>`;
+    input = `<div class="urlrow"><input id="${id}" type="url" inputmode="url" placeholder="https:\/\/" ${canWrite ? "" : "readonly"} value="${esc(v)}"><span id="${id}_open">${linkHtml(v, "Open")}</span></div>`;
   } else if (f.t === "long") {
     input = `<textarea id="${id}" ${canWrite ? "" : "readonly"}>${esc(v)}</textarea>`;
   } else {
@@ -754,7 +754,7 @@ async function save(c, old, isNew) {
   if (out.northing != null && (out.northing < 1231000 || out.northing > 1259000)) bad.push("northing");
   for (const f of c.fields) if (f.t === "number" && out[f.k] != null && !["change","baseline_value","current_value"].includes(f.k) && out[f.k] < 0) bad.push(f.k);
   [...missing, ...bad].forEach(k => { const el = document.querySelector(`#edroot .fld[data-k="${k}"]`); if (el) el.classList.add("invalid"); });
-  if (bad.length) { msg.className = "msg err"; msg.textContent = bad.some(b => c.fields.some(f => f.k === b && f.t === "url")) ? "The link must be a full web address starting with https:// (or http://)." : "Check " + bad.join(", ") + ": coordinates must fall inside Tobago (UTM 20N) and counts cannot be negative."; return; }
+  if (bad.length) { msg.className = "msg err"; msg.textContent = bad.some(b => c.fields.some(f => f.k === b && f.t === "url")) ? "The link must be a full web address starting with https:\/\/ (or http:\/\/)." : "Check " + bad.join(", ") + ": coordinates must fall inside Tobago (UTM 20N) and counts cannot be negative."; return; }
   out.updated_at = new Date().toISOString().slice(0, 10);
   const btn = $("#edSave"); btn.disabled = true;
   try {
