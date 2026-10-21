@@ -627,7 +627,7 @@ function openEditor(k, id, prefill) {
     if (p === "1" && k === "sources") {
       const ph = String(r.attached_photos || "").split(";").map(x => x.trim()).filter(Boolean).map(x => { const [n, id] = x.split("|"); return { n, id }; });
       extra += isNew ? `<div class="fld wide" id="waBlock" ${r.source_type === WA_TYPE ? "" : "hidden"}><label>WhatsApp photos<span class="key">attached_photos</span></label><span class="callout" style="margin:0">Save the source first. An <b>Attach photos</b> button then appears here, so you can add the photos straight from your phone or computer. The photos go to the restricted folder, which is for Climate Unit members only.</span></div>` : `<div class="fld wide" id="waBlock" ${r.source_type === WA_TYPE ? "" : "hidden"}><label>WhatsApp photos<span class="key">attached_photos</span></label>
-        <div class="linked">${ph.length ? ph.map(x => x.id ? `<a class="extlink" href="https://drive.google.com/file/d/${esc(x.id)}/view" target="_blank" rel="noopener noreferrer">${esc(x.n)}</a>` : esc(x.n)).join("<br>") : '<span class="muted">No photos attached yet.</span>'}</div>
+        <div class="linked">${ph.length ? ph.map(x => x.id ? `<a class="extlink" href="https:\/\/drive.google.com\/file\/d\/${esc(x.id)}\/view" target="_blank" rel="noopener noreferrer">${esc(x.n)}</a>` : esc(x.n)).join("<br>") : '<span class="muted">No photos attached yet.</span>'}</div>
         ${canWrite ? `<div class="urlrow" style="margin-top:6px"><input id="attachInput" type="file" accept="image/*" multiple aria-label="Choose photos"><button type="button" class="btn" id="attachBtn">Attach photos</button></div>` : ""}
         <span class="help">Pick the photos from your phone or computer. They are saved in the restricted Climate Unit folder, never the Commons, named with this source's WA reference, and listed here. Up to 10 at a time. Photos are shrunk and their hidden details (such as the phone's location stamp) removed, so take the location from the sender's pin.</span>
         <span class="help"><b>Climate Unit only.</b> If this fails, ask the folder owner to share the folder with you. Don't rename, move or delete the files: their names are recorded here.${SETTINGS.restrictedFolderUrl ? ` <a class="extlink" href="${esc(safeUrl(SETTINGS.restrictedFolderUrl))}" target="_blank" rel="noopener noreferrer">Open the folder ↗</a>` : ""}</span></div>`;
@@ -812,7 +812,7 @@ function sheetRows(c) {
   const extra = ev ? ["best_source_reliability", "desk_verified_rule", "evidence_check"] : [];
   return { keys: c.id ? [...keys, ...extra] : ["row_id", ...keys, ...extra], rows };
 }
-const exportUrl = (fmt, gid) => "https://docs.google.com/spreadsheets/d/" + SHEET.id + "/export?format=" + fmt + (gid !== undefined ? "&gid=" + gid : "");
+const exportUrl = (fmt, gid) => "https:\/\/docs.google.com\/spreadsheets\/d\/" + SHEET.id + "\/export?format=" + fmt + (gid !== undefined ? "&gid=" + gid : "");
 $("#xlsBtn").onclick = () => { if (SHEET.id) window.open(exportUrl("xlsx"), "_blank", "noopener"); };
 $("#csvBtn").onclick = () => {
   const c = COLS[tab === "detail" ? detailKey : tab]; if (!c || !SHEET.id) return;
