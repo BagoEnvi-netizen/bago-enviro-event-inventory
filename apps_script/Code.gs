@@ -180,7 +180,7 @@ function doPost(e) {
     const req = JSON.parse(e.postData.contents || '{}');
     const action = String(req.a || '');
     if (API_ACTIONS_.indexOf(action) < 0) throw new Error('Unknown action: ' + action);
-    if (action === 'login') return apiOut_(null, login_(String(req.email || ''), String(req.pin || '')));
+    if (action === 'login') return apiOut_(null, login_(String((req.args || [])[0] || ''), String((req.args || [])[1] || '')));
     if (API_OPEN_.indexOf(action) >= 0) return apiOut_(null, this[action].apply(null, req.args || []));
     const me = memberForToken_(req.t);
     if (!me) throw new Error('AUTH:Your sign-in has expired. Sign in again.');
