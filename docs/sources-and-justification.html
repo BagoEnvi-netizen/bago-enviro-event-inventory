@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sources and justification &middot; Tobago Event Inventory</title>
+<style>
+:root{--bg:#eceff3;--panel:#ffffff;--ink:#17202b;--muted:#56616e;--accent:#23395b;--line:#d3d9e0;--crit:#b3402e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:15px;line-height:1.55}
+.wrap{max-width:880px;margin:0 auto;padding:0 24px 64px}
+header.band{background:var(--accent);color:#fff}
+header.band .wrap{padding-top:20px;padding-bottom:20px}
+header.band .kicker{font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.75;margin:0 0 4px}
+header.band h1{margin:0;font-size:24px;line-height:1.25}
+nav.docs{background:var(--panel);border-bottom:1px solid var(--line)}
+nav.docs .wrap{padding-top:10px;padding-bottom:10px;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13.5px}
+nav.docs a{color:var(--accent);text-decoration:none;font-weight:600}
+nav.docs a:hover{text-decoration:underline}
+nav.docs a.this{color:var(--ink);border-bottom:2px solid var(--accent);padding-bottom:2px}
+.restricted{background:#fdf1ec;border:1px solid var(--crit);color:var(--crit);
+  border-radius:6px;padding:10px 14px;font-size:13.5px;font-weight:600;margin:20px 0 0}
+main{background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  padding:8px 36px 28px;margin-top:24px}
+h2{font-size:19px;margin-top:34px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font-size:16px;margin-top:26px}
+table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px}
+th{background:#f4f6f9;text-align:left}
+th,td{border:1px solid var(--line);padding:7px 10px;vertical-align:top}
+code{font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  font-size:.86em;background:#eef1f5;padding:1px 5px;border-radius:4px}
+a{color:var(--accent)}
+blockquote{border-left:3px solid var(--line);margin:12px 0;padding:2px 14px;color:var(--muted)}
+footer{color:var(--muted);font-size:12.5px;margin-top:28px;text-align:center}
+strong code, b code{background:#e4e9f2}
+</style>
+</head>
+<body>
+<header class="band"><div class="wrap">
+<p class="kicker">Tobago Event Inventory &middot; Climate Unit</p>
+<h1>Sources and justification</h1>
+</div></header>
+<nav class="docs"><div class="wrap"><a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/">&#8592; The inventory</a>
+<a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/how-to-guide.html">How-to guide</a>
+<a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/instruction-manual.html">Instruction manual</a>
+<a class="this" href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/sources-and-justification.html">Sources &amp; justification</a>
+<a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/open-questions.html">Open questions</a>
+<a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/questions-log.html">Full questions log</a></div></nav>
+<div class="wrap">
+
+<main>
+<h1>Sources and justification</h1>
+<p>The Event Inventory was not invented from scratch. Each part follows a published international or Caribbean method, so Tobago's records can be checked, compared and sent to ODPM and UNDRR without re-entry. Local fields were added only where Tobago's impact chains need them, and each local rule is named as such below.</p>
+<p>Use this tab to answer &quot;what is this based on?&quot; and &quot;why is it built this way?&quot;. The full design review, with every field and its basis, is in the <a href="https://claude.ai/artifact/2oCKQj6STMw14mTUNuMWCn">Tobago Event Inventory: Review (Claude login required)</a>.</p>
+<h2>Standards the design follows</h2>
+<table>
+<thead>
+<tr>
+<th>Standard</th>
+<th>Issued by</th>
+<th>What the inventory takes from it</th>
+<th>Where it shows</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://desinventar-api.undrr.org/methodology.html">DesInventar disaster loss methodology</a></td>
+<td>UNDRR, UNDP</td>
+<td>The core rules: record every event with any impact, including small and medium ones; one record per event per place; always cite a source; most effect fields (deaths, injured, affected, evacuated, houses, roads, crops)</td>
+<td>Events, Sources</td>
+</tr>
+<tr>
+<td><a href="https://www.undrr.org/publication/technical-guidance-monitoring-and-reporting-progress-achieving-global-targets-sendai">Sendai Framework indicators, targets A–D</a></td>
+<td>UNDRR</td>
+<td>The counts countries must report: deaths and missing, people affected, economic loss, damage to critical infrastructure and services; breakdown by sex, age and disability</td>
+<td>Events impact fields; Human effects</td>
+</tr>
+<tr>
+<td><a href="https://www.undrr.org/building-risk-knowledge/disaster-losses-and-damages-tracking-system-delta-resilience">DELTA Resilience</a> (successor to DesInventar Sendai)</td>
+<td>UNDRR, UNDP, WMO</td>
+<td>Cause and effect kept apart: one hazardous event linked to many effect records; a permanent unique record ID for exchange</td>
+<td>Hazardous events tab; hazardous_event_id; record_uuid</td>
+</tr>
+<tr>
+<td><a href="https://unstats.un.org/UNSDWebsite/statcom/session_57/documents/BG-4c-G-DRSF-E.pdf">Global Disaster-Related Statistics Framework (G-DRSF)</a></td>
+<td>UN Statistical Commission with UNDRR, endorsed March 2026</td>
+<td>One row per group of people or per asset, with dates for counts that change over time, such as displacement</td>
+<td>Human effects; Damage and losses</td>
+</tr>
+<tr>
+<td><a href="https://community.wmo.int/en/node/187809">WMO Cataloguing of Hazardous Events</a></td>
+<td>WMO, through the Met Service</td>
+<td>A standard ID for each weather or climate event so impacts link to their cause</td>
+<td>Met Service IDs tab; wmo_che_id on Hazardous events</td>
+</tr>
+<tr>
+<td><a href="https://www.undrr.org/publication/documents-and-publications/hazard-information-profiles-hips-2025-version">UNDRR–ISC Hazard Information Profiles, 2025</a></td>
+<td>UNDRR, International Science Council</td>
+<td>Common hazard names and codes to map local event types to</td>
+<td>hip_name_or_code</td>
+</tr>
+<tr>
+<td><a href="https://glidenumber.net/glide/public/about.jsp">GLIDE numbers</a></td>
+<td>Asian Disaster Reduction Center and partners</td>
+<td>Global ID for large or named disasters</td>
+<td>glide_no</td>
+</tr>
+<tr>
+<td><a href="https://www.gfdrr.org/en/publication/post-disaster-needs-assessments-guidelines-volume">Post-Disaster Needs Assessment (PDNA) Guidelines, Vol. A</a>, including ECLAC DaLA</td>
+<td>EU, World Bank, UN</td>
+<td>Sector groups; damage, losses and additional costs kept apart; physical quantity recorded even without a cost; price year</td>
+<td>Damage and losses; est_cost_ttd and est_loss_ttd kept apart; price_year</td>
+</tr>
+<tr>
+<td><a href="https://cdema.org/virtuallibrary/index.php/charim-hbook/data-management-book/2-data-requirements/2-3-landslide-data">CHARIM landslide and flood inventory guidance</a></td>
+<td>CDEMA, World Bank, ITC</td>
+<td>What a usable Caribbean hazard inventory needs: date and location precision, size, trigger; only well-located records train susceptibility maps</td>
+<td>date_precision, location_precision, length_m, volume_m3, trigger</td>
+</tr>
+<tr>
+<td><a href="https://www.undrr.org/publication/documents-and-publications/framework-towards-assessing-climate-change-and-disaster">FRAME-ECO</a>, 2026</td>
+<td>UNEP, UNDRR, UNU-EHS</td>
+<td>Ecosystem losses described by extent, condition and services</td>
+<td>Ecosystem losses</td>
+</tr>
+<tr>
+<td><a href="https://unfccc.int/resource/docs/2013/tp/02.pdf">UNFCCC non-economic losses</a> (technical paper FCCC/TP/2013/2 and updates)</td>
+<td>UNFCCC</td>
+<td>Categories of loss that cannot be priced: life, health, mobility, territory, cultural heritage, knowledge, identity, biodiversity, ecosystem services</td>
+<td>Non-economic losses (nel_category)</td>
+</tr>
+<tr>
+<td>Trinidad and Tobago Sargassum Management Plan (TTSMP) stoplight</td>
+<td>National</td>
+<td>Green, Yellow and Red stranding classes used for the sargassum entry rule</td>
+<td>sargassum_flag</td>
+</tr>
+<tr>
+<td>Unit GIS standards</td>
+<td>Climate unit</td>
+<td>UTM Zone 20N (EPSG:32620), coordinate range checks for Tobago, GeoPackage as the GIS copy and the only home for lines and areas, same fields in QField. All geospatial material goes to the GIS Specialist first; files are held in the Commons, and the inventory records where each event's coordinates came from (coords_from). Agreed 8 October 2026</td>
+<td>easting, northing; GeoPackage layers</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Local additions for Tobago</strong>, used only where the impact chains need them: road closure hours and chainage (isolation, IC1), links to the coastal Site and Asset Register, the seven parishes, sargassum fields, and links to Risk Data Register entries (d031 landslides, d032 floods, d034 loss and damage, d056 road closures).</p>
+<h2>Design choices and why</h2>
+<p>Each rule below either follows a standard or is a local rule. Local rules are marked so the team knows which ones it can change.</p>
+<table>
+<thead>
+<tr>
+<th>Design choice</th>
+<th>Why</th>
+<th>Basis</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Record every event with any impact, however small</td>
+<td>Small, frequent events add up to most of the damage and are rarely recorded elsewhere</td>
+<td>DesInventar</td>
+</tr>
+<tr>
+<td>One row per event per place</td>
+<td>Lets each impact be mapped and counted on its own</td>
+<td>DesInventar</td>
+</tr>
+<tr>
+<td>Cause (hazardous event) kept apart from effects (events)</td>
+<td>Links rainfall or swell to impacts for thresholds; counts storms as well as damage sites; matches national and UN reporting</td>
+<td>DELTA Resilience; WMO hazardous event catalogue</td>
+</tr>
+<tr>
+<td>Every event cites at least one source</td>
+<td>Every number can be traced and checked</td>
+<td>DesInventar</td>
+</tr>
+<tr>
+<td>Date and location precision recorded on every event</td>
+<td>Honest about uncertainty; only precise points are used to train susceptibility maps</td>
+<td>CHARIM</td>
+</tr>
+<tr>
+<td>Verification ladder: Reported, Desk-verified, Partner-observed, Field-verified</td>
+<td>Shows how far each record can be trusted; only checked records enter the analysis. Desk-verified means one record from the mandated agency about a claim within its mandate, or two independent sources; a source that repeats another never counts as the second, because claims within a mandate cannot be checked independently</td>
+<td>Common inventory practice; Partner-observed step and the mandated-agency part of Desk-verified are a <strong>local rule</strong> (Draft 0.5; authority rule agreed 8 October 2026)</td>
+</tr>
+<tr>
+<td>Field-verified set only by a CRVA team field check (form THA-FV-01, GPS point, two photos)</td>
+<td>Keeps a clear audit trail between the team's own checks and partner data</td>
+<td><strong>Local rule</strong>: the standards require sources but do not define field verification</td>
+</tr>
+<tr>
+<td>Who first saw it (data_origin) kept apart from how far it was checked (verification_status)</td>
+<td>A partner's field data is good evidence but is not the team's own check</td>
+<td><strong>Local rule</strong> (Draft 0.5)</td>
+</tr>
+<tr>
+<td>Damage, losses and additional costs kept apart, each with a price year</td>
+<td>Repair cost and lost income are different things; costs from different years can be adjusted for inflation</td>
+<td>PDNA / DaLA</td>
+</tr>
+<tr>
+<td>Physical amounts recorded even without a cost</td>
+<td>Metres of road or number of houses are useful long before a cost is known</td>
+<td>PDNA</td>
+</tr>
+<tr>
+<td>Totals on the event; detail rows may not exceed them</td>
+<td>Stops double counting in reports</td>
+<td><strong>Local QA rule</strong> (Review point 3)</td>
+</tr>
+<tr>
+<td>Fields grouped as Essential, Recommended and Loss &amp; damage</td>
+<td>A 3–4 person team fills what Tier 1 needs first</td>
+<td><strong>Local rule</strong> (Draft 0.4)</td>
+</tr>
+<tr>
+<td>No names of affected people; consent recorded for community information</td>
+<td>Privacy and trust in communities</td>
+<td><strong>Local rule</strong>; full privacy rules still open (I11)</td>
+</tr>
+<tr>
+<td>climate_related set from the trigger; attribution only from a published study</td>
+<td>Separates climate from non-climate losses without claiming attribution the unit cannot prove</td>
+<td>Loss and damage reporting practice</td>
+</tr>
+<tr>
+<td>Sargassum recorded only when Yellow or Red, or Green with an impact</td>
+<td>Sargassum strands most weeks in season; the coastal unit keeps the full record, so no evidence is lost</td>
+<td><strong>Local rule</strong> (Draft 0.5); a stated departure from the DesInventar &quot;every event&quot; rule</td>
+</tr>
+</tbody>
+</table>
+<h2>Unit decisions and open questions</h2>
+<p>The team has settled three design questions: H1, H3, and the Desk-verified authority rule (8 October 2026), under which a mandated agency's record within its mandate is enough on its own and a repeat never counts as a second source. Several others are still open, and the inventory uses interim rules until they are decided.</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Status</th>
+<th>What it means for the inventory</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>H1, option B: IDs never renumbered</td>
+<td>Decided (<a href="https://claude.ai/artifact/G2u8frYrSyZUL3aHYTfgfm">assessment of the alternate review (Claude login required)</a>)</td>
+<td>The year in an ID is the event year when the ID was issued. A later date correction leaves the ID alone.</td>
+</tr>
+<tr>
+<td>H3, option A: no countable impact goes in damage_desc</td>
+<td>Decided (same document)</td>
+<td>&quot;No impact beyond the hazard: …&quot; in damage_desc counts as the impact field</td>
+</tr>
+<tr>
+<td>I4: what counts as a significant event</td>
+<td>Open</td>
+<td>Interim: any death, any building destroyed, a road closed more than a day, or any THA response spending</td>
+</tr>
+<tr>
+<td>I5: interim hazardous event ID scheme</td>
+<td>Open</td>
+<td>HE-YYYY-NNN used until the Met Service issues WMO IDs; the Met Service IDs tab is ready to cross-reference them without renumbering</td>
+</tr>
+<tr>
+<td>I11: privacy rules</td>
+<td>Open</td>
+<td>No names of affected people; consent recorded</td>
+</tr>
+<tr>
+<td>I23: local hazard code for sargassum</td>
+<td>Open</td>
+<td>Needed before export to DELTA; to settle with ODPM</td>
+</tr>
+<tr>
+<td>I24: consistency of the coastal unit's stoplight flags</td>
+<td>Open</td>
+<td>Sargassum entry rule relies on the flags</td>
+</tr>
+<tr>
+<td>I25: minimum precise events per hazard before a susceptibility map counts as trained</td>
+<td>Open</td>
+<td>QA shows the training-ready count</td>
+</tr>
+<tr>
+<td>When a field check is required</td>
+<td>Proposal for discussion (<a href="https://claude.ai/artifact/JFWCSK2CEmnHdfsvx1TvP4">proposal (Claude login required)</a>)</td>
+<td>No change until agreed</td>
+</tr>
+</tbody>
+</table>
+<p>All open items are tracked in the <a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/questions-log.html">CRVA Open Questions Log</a>.</p>
+<h2>What the inventory feeds</h2>
+<p>Every field earns its place by feeding at least one CRVA output. The live page shows what each field feeds under its help line.</p>
+<table>
+<thead>
+<tr>
+<th>CRVA output</th>
+<th>What it uses from the inventory</th>
+<th>Why it matters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hazard map validation</td>
+<td>Coordinates, location precision, size and depth</td>
+<td>A missing or misplaced event makes a map look better or worse than it is</td>
+</tr>
+<tr>
+<td>Landslide and flood susceptibility maps</td>
+<td>Precise points only (GPS or road chainage), event type</td>
+<td>Imprecise points are left out</td>
+</tr>
+<tr>
+<td>Screening matrix likelihood and consequence</td>
+<td>Event type, trigger, dates; deaths, people affected, buildings</td>
+<td>How often and how badly each hazard hits sets its score</td>
+</tr>
+<tr>
+<td>Impact chains</td>
+<td>Road closure hours (IC1), livelihoods and boats (IC3), salinity reports (IC8), parent_event_id</td>
+<td>Shows whether the chains actually happen in Tobago</td>
+</tr>
+<tr>
+<td>Thresholds and DAPP signposts</td>
+<td>hazardous_event_id with rainfall, wind or water level; slow-onset values</td>
+<td>Shows when an adaptation pathway must change</td>
+</tr>
+<tr>
+<td>Exposure and vulnerability</td>
+<td>Facilities affected, human effects by group, ecosystem and non-economic losses</td>
+<td>Who and what is hit hardest</td>
+</tr>
+<tr>
+<td>Loss and damage record (register d034)</td>
+<td>Damage and losses with price year, response funding</td>
+<td>National and UN reporting; evidence for Loss and Damage Fund requests</td>
+</tr>
+</tbody>
+</table>
+<h2>Source documents</h2>
+<p>International standards are linked in the first table. The unit's own design records are:</p>
+<ul>
+<li><a href="https://claude.ai/artifact/2oCKQj6STMw14mTUNuMWCn">Tobago Event Inventory: Review (Claude login required)</a>: the standards table, field-by-field basis, and changes in Drafts 0.4 and 0.5.</li>
+<li><a href="https://claude.ai/artifact/G2u8frYrSyZUL3aHYTfgfm">Assessment of the Alternate Review (Draft 0.6) (Claude login required)</a>: decisions H1 and H3.</li>
+<li><a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/instruction-manual.html">Event Inventory: Objectives and Instruction Manual</a>: the working rules.</li>
+<li>Tobago Tier 1 CRVA Feed Readiness Memo (3 October 2026, project file): checks that the inventory covers every Tier 1 input.</li>
+<li><a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/questions-log.html">CRVA Open Questions Log</a>: I4, I5, I11, I23, I24, I25.</li>
+<li><a href="https://claude.ai/artifact/Y4jnDmSJ4t5d9Kri1h9A6z">Tobago Risk Data Register (Claude login required)</a>: datasets d031, d032, d034, d056 that the inventory builds.</li>
+</ul>
+
+</main>
+<footer>Hosted with the Tobago Event Inventory &middot; updated October 2026 &middot;
+to change this page, edit its source in the inventory repo&rsquo;s <code>docs/</code> folder</footer>
+</div>
+</body>
+</html>

@@ -17,13 +17,13 @@ var PHASE = 2;   // 1: Events, Sources, Hazardous events, Field checks only. 2: 
 var LINK_SHEET = 'Event_Sources';
 var RESTRICTED_FOLDER = 'Community reports – restricted';
 
-// Settings tab (key, value). Links shown on the How-to guide tab; point them at Google Docs copies
-// of the guide and manual so colleagues without a Claude account can open them.
+// Settings tab (key, value). Links shown on the How-to guide tab; default to the copies
+// hosted with the app on GitHub Pages (docs/ folder of the repo) so no one needs a Claude account.
 var DEFAULT_SETTINGS = {
-  guideUrl: 'https://claude.ai/code/artifact/e990d7ac-b9dd-47dd-8b9d-56253e859708',
-  manualUrl: 'https://claude.ai/artifact/AUUHSuvTLUWgXoBdmim12N',
-  questionsUrl: 'https://claude.ai/artifact/9fQu6nQYsA3z9cVetgTRQ1',        // Event Inventory: Open Questions (extract, for every user)
-  fullQuestionsUrl: 'https://claude.ai/artifact/17kMQQQfJ6HnbqtAye74dS',    // full CRVA open questions log (Climate Unit only)
+  guideUrl: 'https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/how-to-guide.html',
+  manualUrl: 'https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/instruction-manual.html',
+  questionsUrl: 'https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/open-questions.html',        // Event Inventory: Open Questions (extract, for every user)
+  fullQuestionsUrl: 'https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/questions-log.html',    // full CRVA open questions log (Climate Unit only)
   restrictedFolderUrl: ''
 };
 

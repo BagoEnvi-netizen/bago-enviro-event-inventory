@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Event Inventory: Objectives and Instruction Manual &middot; Tobago Event Inventory</title>
+<style>
+:root{--bg:#eceff3;--panel:#ffffff;--ink:#17202b;--muted:#56616e;--accent:#23395b;--line:#d3d9e0;--crit:#b3402e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:15px;line-height:1.55}
+.wrap{max-width:880px;margin:0 auto;padding:0 24px 64px}
+header.band{background:var(--accent);color:#fff}
+header.band .wrap{padding-top:20px;padding-bottom:20px}
+header.band .kicker{font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.75;margin:0 0 4px}
+header.band h1{margin:0;font-size:24px;line-height:1.25}
+nav.docs{background:var(--panel);border-bottom:1px solid var(--line)}
+nav.docs .wrap{padding-top:10px;padding-bottom:10px;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13.5px}
+nav.docs a{color:var(--accent);text-decoration:none;font-weight:600}
+nav.docs a:hover{text-decoration:underline}
+nav.docs a.this{color:var(--ink);border-bottom:2px solid var(--accent);padding-bottom:2px}
+.restricted{background:#fdf1ec;border:1px solid var(--crit);color:var(--crit);
+  border-radius:6px;padding:10px 14px;font-size:13.5px;font-weight:600;margin:20px 0 0}
+main{background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  padding:8px 36px 28px;margin-top:24px}
+h2{font-size:19px;margin-top:34px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font-size:16px;margin-top:26px}
+table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px}
+th{background:#f4f6f9;text-align:left}
+th,td{border:1px solid var(--line);padding:7px 10px;vertical-align:top}
+code{font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  font-size:.86em;background:#eef1f5;padding:1px 5px;border-radius:4px}
+a{color:var(--accent)}
+blockquote{border-left:3px solid var(--line);margin:12px 0;padding:2px 14px;color:var(--muted)}
+footer{color:var(--muted);font-size:12.5px;margin-top:28px;text-align:center}
+strong code, b code{background:#e4e9f2}
+</style>
+</head>
+<body>
+<header class="band"><div class="wrap">
+<p class="kicker">Tobago Event Inventory &middot; Climate Unit</p>
+<h1>Event Inventory: Objectives and Instruction Manual</h1>
+</div></header>
+<nav class="docs"><div class="wrap"><a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/">&#8592; The inventory</a>
+<a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/how-to-guide.html">How-to guide</a>
+<a class="this" href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/instruction-manual.html">Instruction manual</a>
+<a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/sources-and-justification.html">Sources &amp; justification</a>
+<a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/open-questions.html">Open questions</a>
+<a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/questions-log.html">Full questions log</a></div></nav>
+<div class="wrap">
+
+<main>
+<h1>Event Inventory: Objectives and Instruction Manual</h1>
+<p>Oct 13, 2026 · Climate Team</p>
+<h2>Why we keep the event inventory</h2>
+<p>Every landslide, flood, overtopping, road closure or fire leaves evidence of where Tobago is at risk and what it costs. If nobody writes it down in one place, that evidence is lost. The event inventory is that place.</p>
+<p><strong>Objectives</strong></p>
+<ol>
+<li><strong>Check the hazard maps against reality.</strong> If the maps say a place is low risk but it floods every year, the maps are wrong.</li>
+<li><strong>Train the landslide and flood maps.</strong> Well-located past events teach the models where events happen.</li>
+<li><strong>Score how often and how badly each hazard hits.</strong> This sets the likelihood and consequence scores in the screening matrix.</li>
+<li><strong>Test the impact chains.</strong> For example, how often a landslide cuts off a community and for how long.</li>
+<li><strong>Track slow changes over time.</strong> Beach width, well salinity and other signposts tell us when to switch adaptation pathways (DAPP).</li>
+<li><strong>Build Tobago's loss and damage record.</strong> Counts and costs can be reported to ODPM, UNDRR and, when needed, the Loss and Damage Fund.</li>
+</ol>
+<p><strong>The one rule to remember:</strong> record every event with any impact, however small. Small, frequent events add up to most of the damage, and they are the ones nobody else records.</p>
+<p>Background on the standards behind the form is in Tobago Event Inventory: Review.</p>
+<h2>What we record</h2>
+<p>The workbook is <code>Tobago_Event_Inventory_DRAFT.xlsx</code> (Draft 0.6). Each sheet holds one kind of record. Fill them in priority order: we are a small team, so <strong>Essential comes first, always</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Priority</th>
+<th>Sheet</th>
+<th>One row per</th>
+<th>When to fill</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1 Essential</strong></td>
+<td>Events</td>
+<td>Impact at one place (a slide on one road, a flood in one street)</td>
+<td>Every event</td>
+</tr>
+<tr>
+<td><strong>1 Essential</strong></td>
+<td>Sources and Event_Sources</td>
+<td>Document, log, article, interview or observation, and the links between sources and events</td>
+<td>Every event: at least one source</td>
+</tr>
+<tr>
+<td><strong>1 Essential</strong></td>
+<td>Field_Checks</td>
+<td>Site visit by the CRVA team to check one event (form THA-FV-01)</td>
+<td>Every team field visit; the only route to Field-verified</td>
+</tr>
+<tr>
+<td><strong>1 Essential</strong></td>
+<td>Slow_Onset_Losses</td>
+<td>Indicator at one place (beach width at a profile, salinity at a well)</td>
+<td>Each monitoring visit</td>
+</tr>
+<tr>
+<td>1 Essential (rain, storm, swell)</td>
+<td>Hazardous_Events</td>
+<td>Storm, rain event, swell or dry spell that caused impacts</td>
+<td>Every rain event, storm or swell that caused impacts; other drivers when known. Official Met Service IDs, when received, go on the separate Met Service IDs sheet (2 Recommended)</td>
+</tr>
+<tr>
+<td>2 Recommended</td>
+<td>Human_Effects</td>
+<td>Group of people (by sex, age, disability)</td>
+<td>Significant events with a breakdown</td>
+</tr>
+<tr>
+<td>2 Recommended</td>
+<td>Damage_Losses</td>
+<td>Asset or service damaged, by sector</td>
+<td>Significant events; quantities even without costs</td>
+</tr>
+<tr>
+<td>2 Recommended</td>
+<td>Ecosystem_Losses</td>
+<td>Reef, seagrass, mangrove or beach affected</td>
+<td>When an event visibly damages habitat</td>
+</tr>
+<tr>
+<td>3 Loss &amp; damage</td>
+<td>Non_Economic_Losses</td>
+<td>Loss that cannot be priced (health, heritage, identity)</td>
+<td>Significant events; mainly from parish sessions</td>
+</tr>
+<tr>
+<td>3 Loss &amp; damage</td>
+<td>Response_Funding</td>
+<td>Payment or spending on response and recovery</td>
+<td>Significant events, when figures exist</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Within a sheet,</strong> each column also has a priority. The <strong>Priorities</strong> sheet lists every field, its priority and what it feeds; hover over any column header for the same note. Dark green headers are required: the record is not complete without them.</p>
+<p><strong>What not to record:</strong> names of people affected, private contact details, or guesses presented as facts. Where a number is an estimate, say how it was made in <code>notes</code>.</p>
+<h2>How to record an event</h2>
+<h3>For each event</h3>
+<ol>
+<li>
+<p><strong>Find it.</strong> Sources: TEMA situation reports, Division of Infrastructure road logs, WASA and Met Service records, newspapers since about 2010, community interviews, Rapid Coastal Appraisal visits, drone flights, your own observations.</p>
+</li>
+<li>
+<p><strong>Check it is not already there.</strong> Filter Events by date and parish. If it is, add your source to the existing record instead (step 5). If you find it was entered twice, mark the extra row <code>Duplicate</code> and fill <code>duplicate_of</code>.</p>
+</li>
+<li>
+<p><strong>Enter the source first</strong> on the Sources sheet: a new <code>source_id</code>, type, title, date and reference (where to find it). Put the originating agency's own record numbers, such as a partner's field form number, observation ID or photo numbers, in agency_record_ids so the source can be traced back to the original. Set authority (see the authoritative agencies table below), and if the source copies another, such as a news story built from a TEMA report, fill repeats_source_id and original_held.</p>
+</li>
+<li>
+<p><strong>Enter the event</strong> on the Events sheet. Fill the Essential fields first:</p>
+<ul>
+<li><code>event_id</code> (leave blank on the shared page and it is numbered from the start date; in Excel use the event's year and the next number in that year), <code>event_type</code> and <code>trigger</code> from the drop-downs;</li>
+<li><code>date_start</code> and <code>date_precision</code> (be honest: if only the month is known, use the 1st and choose <em>Month</em>);</li>
+<li><code>parish</code>, <code>location_desc</code> (something a colleague could find), coordinates if known, <code>location_precision</code> (only GPS or road chainage counts as precise) and <code>coords_from</code> (Unit GPS, a field check ID, or the source ID of an agency's geodata);</li>
+<li>at least one impact field: people affected, deaths, buildings damaged or destroyed, facilities affected, road closed and for how many hours, damage description or cost. If there was no countable impact, say so in the damage description (e.g. “No impact beyond the hazard: open grassland burned”), not in notes. The QA checks count any record with none;</li>
+<li><code>data_origin</code> (who first saw or measured it; name the partner in <code>origin_agency</code>), <code>verification_status</code>, <code>confidence</code>, <code>recorded_by</code>, <code>recorded_date</code>.</li>
+</ul>
+<p>Then fill any Recommended fields you have. <code>climate_related</code> fills itself.</p>
+</li>
+<li>
+<p><strong>Link event and source</strong> on Event_Sources. Both check columns must show <em>OK</em>. On the shared page, tick the source on the event, or open the source and use Link to this event; Group by event on the Sources tab shows every event with its sources.</p>
+</li>
+<li>
+<p><strong>Keep totals and detail consistent.</strong> Events holds the totals. Rows on Human_Effects and Damage_Losses are the breakdown and must not add up to more than them. Human_Effects rows are compared for the same variable and date, so time-stamped displacement rows are not added together; damage values are compared in TTD. The <code>exceeds_total</code> column and the QA checks flag any record where detail exceeds the total.</p>
+</li>
+<li>
+<p><strong>Link causes.</strong> If the event came from a storm or rain event, give it the <code>hazardous_event_id</code> (create the Hazardous_Events row if needed; its hazard is the cause, picked from its own list such as Heavy rainfall or Swell / high waves, never an effect such as Landslide; fill the hazard and start date first; this link is required whenever the trigger is heavy rainfall, a tropical storm / hurricane or swell, and the QA checks flag any without it). If it was caused by another event (a slide that closed a road), put that event's ID in <code>parent_event_id</code>.</p>
+</li>
+<li>
+<p><strong>Significant events only:</strong> add detail on Human_Effects, Damage_Losses, Ecosystem_Losses, Non_Economic_Losses and Response_Funding. What counts as “significant” is open question I4. Neither TEMA nor ODPM publishes a definition: their Level 1–3 system classes incidents by who has to respond, not by impact. Two options are proposed for review and consultation:</p>
+<ul>
+<li><strong>Option A: impact rule plus TEMA escalation.</strong> An event is significant if any one of these applies: any death; any building destroyed; a road closed for more than a day; any THA spending on response; or the response went beyond routine Level 1 handling by TEMA (classed Level 2 or 3). This keeps our own impact thresholds and links the inventory to the national system.</li>
+<li><strong>Option B: EM-DAT criteria as an upper tier.</strong> An event is also flagged as major if it meets the international EM-DAT entry criteria: 10 or more deaths, 100 or more people affected, or a declared state of emergency or call for international assistance. This matches international reporting, but few Tobago events will reach it, so it is proposed as a tier on top of Option A, not on its own.</li>
+<li><strong>For consultation:</strong> whether TEMA uses an internal threshold or situation-report trigger that should replace or inform these; which option the unit lead and TEMA prefer. Until agreed, use Option A's impact criteria.</li>
+</ul>
+</li>
+<li>
+<p><strong>Verify.</strong> Move the record up the ladder: <em>Reported</em> (not yet confirmed) → <em>Desk-verified</em> (one record from the mandated agency about a claim within its mandate, or two independent sources; a source that repeats another, such as a news story built from a TEMA report, never counts as the second) → <em>Partner-observed</em> (a partner's own field data, such as the coastal unit's dated, located photos) → <em>Field-verified</em> (only after a CRVA team field check, below).</p>
+</li>
+</ol>
+<p><strong>Authoritative agencies (agreed 8 October 2026).</strong> For claims within its mandate, a mandated agency's record is enough on its own to make an event Desk-verified, because there is no independent source to check it against. Mark such sources &quot;Mandated agency, within its mandate&quot; in the authority field.</p>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Authoritative agency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rainfall, wind, warnings, storm tracks</td>
+<td>Met Service</td>
+</tr>
+<tr>
+<td>Disaster declarations, people affected, shelters, official damage assessments</td>
+<td>TEMA / ODPM</td>
+</tr>
+<tr>
+<td>Road closures and road damage</td>
+<td>Division of Infrastructure</td>
+</tr>
+<tr>
+<td>Water supply outages</td>
+<td>WASA</td>
+</tr>
+<tr>
+<td>Marine heatwaves, coral bleaching, marine disease, sargassum science and offshore monitoring</td>
+<td>IMA</td>
+</tr>
+<tr>
+<td>Beach and coastal monitoring, sargassum stranding flags (TTSMP stoplight)</td>
+<td>Coastal Zone Management Unit</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sources that repeat another.</strong> A news story or post built from an official record is entered with repeats_source_id (the original's ID or reference) and original_held (Y or N). If the original is held, cite the original on the event; add the copy only if it adds new detail. If the original is not held, the copy stands in as weaker evidence and does not make the event Desk-verified; ask the agency for the original. Reposts, shares and screenshots of the same post are one source.</p>
+<p><strong>When an official figure and a local account disagree,</strong> enter the official figure, record the other account in notes, and set confidence to Medium. If the difference matters for the CRVA, such as a location used for map training, consider a field check.</p>
+<p><strong>Sources with geospatial data (agreed 8 October 2026).</strong> Coordinates, flood extents or other shapes, maps and GIS layers from any agency go to the GIS Specialist before they are used anywhere else. On the source, set has_geodata to Y and fill geodata_type, geodata_file, original_crs and sharing_terms. The file is held in the Commons, the team's register of all data held, and its link goes in geodata_link. The GIS Specialist converts it to UTM 20N, decides the location precision, loads lines and areas into the GeoPackage, and sets gis_status. Coordinates from that source go on events only once gis_status reads Checked and loaded to the GeoPackage, with coords_from set to the source ID. The inventory holds one point per event; the GeoPackage is the only home for lines and areas. A whole dataset also gets a Risk Data Register entry.</p>
+<p><strong>Reports received on WhatsApp (agreed 8 October 2026).</strong> The unit has no WhatsApp number, so reports from the public reach staff phones. Treat each as a community report: source type WhatsApp or messaging app, authority Not official, publisher &quot;Member of the public via WhatsApp&quot; (never the sender's name or number). Ask the sender whether they took the photos themselves, when, where (a location pin if possible), and for permission to use them. Save the photos and a short note of the message in the restricted Drive folder Community reports – restricted, which only the climate unit can open, named with a reference such as WA-20271112-03; put that reference in agency_record_ids. WhatsApp material never goes in the Commons. One source per sender per event; a forwarded message repeats its original and is never a new source. A location pin is geodata and goes to the GIS Specialist first. The event stays Reported until corroborated. Until the privacy rules (I11) are agreed, record no names, phone numbers or identifiable faces.</p>
+<p><strong>Using the restricted WhatsApp folder (agreed 13 October 2026).</strong> Only Climate Unit members may open <em>Community reports – restricted</em>. The folder owner shares it in Drive; the inventory never shares it, and the Admin tab flags anyone outside the Climate Unit who can open it. Staff outside the Climate Unit pass WhatsApp reports to a Climate Unit member and do not save them. Photos are saved with <strong>Attach photos</strong> on the source. This makes them smaller, strips hidden details such as the phone's location stamp, names them with the WA reference and a number (WA-20271112-03_01.jpg), and records the names on the source. If the app cannot be used, save them by hand in the same way, with a note file (WA-20271112-03_note.txt) holding the date received, what the message shows and where, but no name or number. Files must not be renamed, moved, or deleted while a source links to them. They must not be shared outside the Climate Unit, copied to the Commons, or downloaded to personal devices. Whether staff delete the copies on their phones, and how long the folder keeps material, are open questions I26 and I27.</p>
+<h3>What “Field-verified” means</h3>
+<p>Two questions are kept apart, in two fields. <strong>Who first saw or measured it?</strong> goes in <code>data_origin</code>. <strong>Has the CRVA team checked it on site?</strong> decides <code>verification_status</code>. Field data from a partner is good evidence and is used in the CRVA, but it is not the team's own field verification.</p>
+<table>
+<thead>
+<tr>
+<th>Situation</th>
+<th>data_origin</th>
+<th>verification_status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>The coastal unit's weekly photos show sargassum at a beach; the CRVA team has not been</td>
+<td>Partner field monitoring (origin_agency: coastal unit)</td>
+<td>Partner-observed</td>
+</tr>
+<tr>
+<td>The CRVA team then visits with the measuring staff or drone and confirms it</td>
+<td>Partner field monitoring (unchanged)</td>
+<td>Field-verified, with the Visit ID in <code>field_check_id</code></td>
+</tr>
+<tr>
+<td>A CRVA team member sees a bush fire while it burns and records it</td>
+<td>Unit field observation</td>
+<td>Field-verified, through a field check of type First-hand observation</td>
+</tr>
+<tr>
+<td>A road log and a news article both report a slide; nobody has visited</td>
+<td>Official record (desk)</td>
+<td>Desk-verified</td>
+</tr>
+</tbody>
+</table>
+<p><strong>A record is Field-verified only when</strong> at least one CRVA team member has visited the site, filled in the Field Verification Form (THA-FV-01), and the outcome is <em>Confirmed</em> or <em>Confirmed with corrections</em>, with a GPS point and at least two photos. Partner staff may come on the visit; that does not replace the team member.</p>
+<h3>For each field check</h3>
+<ol>
+<li>In the office, open the event and choose <strong>Record a field check</strong> (app), or add a row on Field_Checks (workbook). Print form THA-FV-01 and copy the event details into FV1.</li>
+<li>On site, fill FV2 to FV7: who went, the GPS point, the outcome, measurements, impacts seen, photos.</li>
+<li>Back in the office the same week, enter the form. In the app, a confirming outcome sets the event to Field-verified and writes the Visit ID, team and date on it. In the workbook, do this by hand.</li>
+<li>Make any corrections from FV4 on the event. If the visit found nothing, or a different event, leave the status and decide whether the record is Duplicate or Rejected.</li>
+<li>A Follow-up visit (condition or recovery) is recorded the same way; it does not change the status. For every visit, the photos are stored in the Commons, where field visits are tracked. On the field check, list the photo file names in photo_ids and paste the visit's Commons photos link in commons_photos_link.</li>
+</ol>
+<h3>Sargassum events</h3>
+<p>Sargassum strands most weeks in season, so the inventory does <strong>not</strong> record every stranding. Record a sargassum event only when:</p>
+<ul>
+<li>the Coastal Zone Management Unit flags the stranding <strong>Yellow</strong> or <strong>Red</strong> on the national stoplight; or</li>
+<li>it is flagged <strong>Green</strong> but caused a reported impact: a facility or landing site blocked, health complaints, turtle nesting affected, business losses or clean-up spending.</li>
+</ul>
+<p>For each one, fill <code>sargassum_flag</code> and <code>stranding_ref</code> (the coastal unit's observation ID, e.g. <code>BCH-03-20261015</code>), cite the coastal unit's record as the source with <code>data_origin</code> = Partner field monitoring, and for a Green event fill at least one impact field. Send the event ID back to the coastal unit so it can be written into their record. Several weekly flags from one continuing episode at the same beach can be one event; list all their observation IDs.</p>
+<p>Every stranding of every class, including weeks with none, is kept by the coastal unit in its Sargassum Stranding Record (Sargassum Stranding Record guide). <strong>How often</strong> and <strong>for how long</strong> sargassum hits a beach come from that record, never from counting inventory events.</p>
+<h3>For slow-onset indicators</h3>
+<ol>
+<li>Each monitored indicator (a beach profile, a well) has its own <code>slow_onset_id</code>.</li>
+<li>At each monitoring visit, add a <strong>new row</strong> for the period: keep the same baseline, enter the new current value and date. The change calculates itself.</li>
+<li>Say what has been lost because of the change, and how it was measured.</li>
+</ol>
+<h3>Every week</h3>
+<ol>
+<li>Open the <strong>QA checks</strong> sheet. Every check should read 0 except the record counts, the lines marked “For information” and the records-by-parish block. Fix any that do not.</li>
+<li>The GIS Specialist loads verified records into the GeoPackage (<code>events</code> layer and related tables) and reports any location problems back.</li>
+</ol>
+<h3>After each wet season</h3>
+<p>The team reviews the season's events against the hazard maps and updates the slow-onset indicators, as an input to the annual CRVA update.</p>
+<h2>Where your input goes in the CRVA</h2>
+<p><em>(Diagram not included in this copy: where event inventory inputs feed the CRVA. See the live manual.)</em></p>
+<p>The mapped part of each record (where it happened, how big) is used by the GIS to check and train the hazard maps. The table part (when, what, how many, how much) sets the scores, tests the impact chains and builds the loss and damage record.</p>
+<table>
+<thead>
+<tr>
+<th>CRVA output</th>
+<th>What it uses from the inventory</th>
+<th>Why your entry matters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hazard map validation</td>
+<td>Coordinates, location precision, size and depth of events</td>
+<td>A flood mapped in the wrong place, or a missing one, makes the map look better or worse than it is</td>
+</tr>
+<tr>
+<td>Landslide and flood susceptibility maps</td>
+<td>Precise points only (GPS or road chainage), event type and subtype</td>
+<td>Imprecise points are left out, so take a GPS point whenever you can</td>
+</tr>
+<tr>
+<td>Screening matrix (likelihood and consequence)</td>
+<td>Event type, trigger, dates; deaths, people affected, buildings damaged; <code>climate_related</code></td>
+<td>How often a hazard happens and how bad it is sets each hazard's score</td>
+</tr>
+<tr>
+<td>Impact chains</td>
+<td>Road closed and hours (IC1 isolation); livelihoods and boats (IC3 fishing and tourism); salinity reports (IC8); <code>parent_event_id</code> for cascades</td>
+<td>Shows whether the chains we drew actually happen in Tobago</td>
+</tr>
+<tr>
+<td>DAPP signposts and slow-onset trends</td>
+<td>Slow_Onset_Losses values; closure hours; flood frequency at key places</td>
+<td>These numbers tell us when an adaptation pathway must change</td>
+</tr>
+<tr>
+<td>Exposure and vulnerability</td>
+<td>Facilities affected; Human_Effects groups; Ecosystem_Losses; Non_Economic_Losses</td>
+<td>Who and what is hit hardest, including values that cannot be priced</td>
+</tr>
+<tr>
+<td>Loss and damage record (d034)</td>
+<td>Damage_Losses, costs and price year, Response_Funding</td>
+<td>National and international reporting; evidence for Loss and Damage Fund requests</td>
+</tr>
+</tbody>
+</table>
+<h2>Rules, roles and quick reference</h2>
+<p><strong>Eleven rules</strong></p>
+<ol>
+<li>Record every event with any impact, however small; every record needs at least one impact field, and where there was none, the damage description says so.</li>
+<li>One row per event per place; one source at least for every row.</li>
+<li>Never delete a record. Mark it <em>Duplicate</em> or <em>Rejected</em> and say why.</li>
+<li>Be honest about precision: say <em>Month</em> or <em>Village</em> when that is all you know.</li>
+<li>Record physical amounts (metres of road, number of houses) even when the cost is unknown.</li>
+<li>Keep damage (repair cost) and losses (income lost, extra costs) apart.</li>
+<li>Never record names of people affected; record groups and counts.</li>
+<li>Note consent for anything learned from community members.</li>
+<li>Leave a field blank rather than guess; explain estimates in <code>notes</code>.</li>
+<li>Delete the <code>EX-</code> example rows before the first real entry.</li>
+<li>Only a CRVA team field check makes a record Field-verified. A partner's field data makes it Partner-observed.</li>
+</ol>
+<p><strong>Roles and schedule</strong></p>
+<table>
+<thead>
+<tr>
+<th>Who</th>
+<th>Does what</th>
+<th>When</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Research associate and Policy Analyst</td>
+<td>Desk mining, data entry, desk verification</td>
+<td>Ongoing; target set in the campaign plan</td>
+</tr>
+<tr>
+<td>CRVA field team (coastal unit staff may come along)</td>
+<td>Field checks with form THA-FV-01 (paper or QField): GPS, photos, measurements; slow-onset readings</td>
+<td>Recent and large events; each monitoring visit</td>
+</tr>
+<tr>
+<td>GIS Specialist</td>
+<td>QA checks, loading to the GeoPackage, location fixes</td>
+<td>Weekly</td>
+</tr>
+<tr>
+<td>Unit lead</td>
+<td>Reviews significant events and the season summary; decides open questions</td>
+<td>After each wet season</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Quick reference</strong></p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Format</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Event ID (YYYY = year the event happened, set when the ID is issued; never changed afterwards)</td>
+<td><code>EV-YYYY-NNNN</code></td>
+<td>EV-2027-0001</td>
+</tr>
+<tr>
+<td>Hazardous event ID</td>
+<td><code>HE-YYYY-NNN</code></td>
+<td>HE-2027-001</td>
+</tr>
+<tr>
+<td>Slow-onset ID</td>
+<td><code>SO-YYYY-NNN</code></td>
+<td>SO-2027-001</td>
+</tr>
+<tr>
+<td>Field check (Visit) ID</td>
+<td><code>FC-YYYY-NNN</code></td>
+<td>FC-2027-001</td>
+</tr>
+<tr>
+<td>Dates</td>
+<td>YYYY-MM-DD</td>
+<td>2027-11-12</td>
+</tr>
+<tr>
+<td>Coordinates</td>
+<td>UTM zone 20N (EPSG:32620), metres</td>
+<td>763700 / 1244900</td>
+</tr>
+<tr>
+<td>Verification</td>
+<td>Reported → Desk-verified (one mandated-agency record within its mandate, or two independent sources) → Partner-observed → Field-verified (team field check only)</td>
+<td></td>
+</tr>
+<tr>
+<td>Sargassum entry rule</td>
+<td>Yellow or Red flag, or Green with an impact; fill sargassum_flag and stranding_ref</td>
+<td>Red; BCH-03-20261015</td>
+</tr>
+<tr>
+<td>Required on Events</td>
+<td>event_id, is_example, event_type, trigger, date_start, date_precision, parish, location_desc, location_precision, data_origin, verification_status, confidence, recorded_by, recorded_date</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Still to be decided by the team</strong> (Open Questions Log): what counts as a significant event (I4), the interim hazardous event ID scheme (I5; Met Service IDs, when received, go on the Met Service IDs tab and are copied to the matching hazardous event without renumbering it), privacy rules (I11), the local hazard code for sargassum (I23), and whether the coastal unit's stoplight flags are applied consistently (I24). This manual will be updated when they are settled.</p>
+
+</main>
+<footer>Hosted with the Tobago Event Inventory &middot; updated October 2026 &middot;
+to change this page, edit its source in the inventory repo&rsquo;s <code>docs/</code> folder</footer>
+</div>
+</body>
+</html>

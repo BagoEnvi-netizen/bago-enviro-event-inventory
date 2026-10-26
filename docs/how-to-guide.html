@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tobago Event Inventory: Quick How-To Guide &middot; Tobago Event Inventory</title>
+<style>
+:root{--bg:#eceff3;--panel:#ffffff;--ink:#17202b;--muted:#56616e;--accent:#23395b;--line:#d3d9e0;--crit:#b3402e}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  font-size:15px;line-height:1.55}
+.wrap{max-width:880px;margin:0 auto;padding:0 24px 64px}
+header.band{background:var(--accent);color:#fff}
+header.band .wrap{padding-top:20px;padding-bottom:20px}
+header.band .kicker{font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.75;margin:0 0 4px}
+header.band h1{margin:0;font-size:24px;line-height:1.25}
+nav.docs{background:var(--panel);border-bottom:1px solid var(--line)}
+nav.docs .wrap{padding-top:10px;padding-bottom:10px;display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13.5px}
+nav.docs a{color:var(--accent);text-decoration:none;font-weight:600}
+nav.docs a:hover{text-decoration:underline}
+nav.docs a.this{color:var(--ink);border-bottom:2px solid var(--accent);padding-bottom:2px}
+.restricted{background:#fdf1ec;border:1px solid var(--crit);color:var(--crit);
+  border-radius:6px;padding:10px 14px;font-size:13.5px;font-weight:600;margin:20px 0 0}
+main{background:var(--panel);border:1px solid var(--line);border-radius:8px;
+  padding:8px 36px 28px;margin-top:24px}
+h2{font-size:19px;margin-top:34px;border-bottom:1px solid var(--line);padding-bottom:6px}
+h3{font-size:16px;margin-top:26px}
+table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px}
+th{background:#f4f6f9;text-align:left}
+th,td{border:1px solid var(--line);padding:7px 10px;vertical-align:top}
+code{font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  font-size:.86em;background:#eef1f5;padding:1px 5px;border-radius:4px}
+a{color:var(--accent)}
+blockquote{border-left:3px solid var(--line);margin:12px 0;padding:2px 14px;color:var(--muted)}
+footer{color:var(--muted);font-size:12.5px;margin-top:28px;text-align:center}
+strong code, b code{background:#e4e9f2}
+</style>
+</head>
+<body>
+<header class="band"><div class="wrap">
+<p class="kicker">Tobago Event Inventory &middot; Climate Unit</p>
+<h1>Tobago Event Inventory: Quick How-To Guide</h1>
+</div></header>
+<nav class="docs"><div class="wrap"><a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/">&#8592; The inventory</a>
+<a class="this" href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/how-to-guide.html">How-to guide</a>
+<a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/instruction-manual.html">Instruction manual</a>
+<a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/sources-and-justification.html">Sources &amp; justification</a>
+<a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/open-questions.html">Open questions</a>
+<a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/questions-log.html">Full questions log</a></div></nav>
+<div class="wrap">
+
+<main>
+<h1>Tobago Event Inventory: Quick How-To Guide</h1>
+<p>Oct 13, 2026 · Climate Team</p>
+<h2>What it is and where it lives</h2>
+<p>As part of the overall Climate Risk and Vulnerability Assessment, the Event Inventory was developed to record every hazard event with its subsequent impact, however small, for the island of Tobago. The information feeds into the hazard maps, the screening matrix scores, the impact chains and the loss and damage record.</p>
+<p>This is a quick-start for new users. The full rules are in the <a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/instruction-manual.html">Event Inventory: Objectives and Instruction Manual</a>. When the two differ, the manual wins.</p>
+<table>
+<thead>
+<tr>
+<th>What</th>
+<th>Where</th>
+<th>Use it for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Live page (shared database)</td>
+<td><a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/">Tobago Event Inventory</a></td>
+<td>All data entry and checks. Everyone sees the same records.</td>
+</tr>
+<tr>
+<td>Excel workbook (Draft 0.6)</td>
+<td>Excel download button on the live page</td>
+<td>Offline review, filtering, sharing with partners</td>
+</tr>
+<tr>
+<td>GeoPackage</td>
+<td>Built by the GIS Specialist</td>
+<td>Mapping in QGIS or ArcGIS (UTM 20N, EPSG:32620)</td>
+</tr>
+<tr>
+<td>Field form THA-FV-01</td>
+<td>Field_Verification_Form_THA-FV-01_DRAFT.docx</td>
+<td>Field checks (paper, or QField)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The one rule:</strong> record every event with any impact. Small, frequent events add up to most of the damage, and are typically under-reported or left unrecorded. The aim is to document everything that can possibly be captured.</p>
+<h2>Before you start</h2>
+<p>You need sign-in access to the live page: the unit lead adds your email address and gives you a PIN. Open the team link and sign in with both. If you don't have a PIN yet, ask the unit lead.</p>
+<p>The page has ten tabs. The coloured dot on each tab shows its priority: fill Essential first, always.</p>
+<table>
+<thead>
+<tr>
+<th>Tab</th>
+<th>Holds</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>How-to guide</td>
+<td>Links to this guide, the manual and the open questions log, with a lookup of which section answers which question</td>
+<td>Read first</td>
+</tr>
+<tr>
+<td>Overview</td>
+<td>Counts, verification table, <strong>QA checks</strong>, the evidence chart, records by parish, training examples</td>
+<td>Check weekly</td>
+</tr>
+<tr>
+<td>Events</td>
+<td>One row per event per place (a slide on one road, a flood in one street)</td>
+<td>1 Essential</td>
+</tr>
+<tr>
+<td>Sources</td>
+<td>Every document, log, article, interview or observation; can be viewed as a list or grouped by event or hazardous event</td>
+<td>1 Essential</td>
+</tr>
+<tr>
+<td>Field checks</td>
+<td>CRVA team site visits on form THA-FV-01</td>
+<td>1 Essential</td>
+</tr>
+<tr>
+<td>Hazardous events</td>
+<td>The storm, rain spell, swell or dry spell behind the impacts</td>
+<td>1 Essential for rain, storm and swell</td>
+</tr>
+<tr>
+<td>Met Service IDs</td>
+<td>Official hazardous event IDs from the Met Service, when received, matched to our own hazardous events</td>
+<td>2 Recommended</td>
+</tr>
+<tr>
+<td>Slow-onset</td>
+<td>Indicators tracked over time (beach width, well salinity)</td>
+<td>1 Essential</td>
+</tr>
+<tr>
+<td>Loss &amp; damage detail</td>
+<td>Human effects, damage and losses, ecosystem losses, non-economic losses, response funding</td>
+<td>2–3, significant events only</td>
+</tr>
+<tr>
+<td>How it feeds the CRVA</td>
+<td>What each record is used for</td>
+<td>Read once</td>
+</tr>
+</tbody>
+</table>
+<p><strong>First day checklist</strong></p>
+<ul>
+<li>[ ] Read the manual sections &quot;How to record an event&quot; and &quot;Eleven rules&quot; (about 20 minutes).</li>
+<li>[ ] Open a training example on each tab. Example IDs contain EX- and are fictional. Use the &quot;Show examples&quot; box on Overview to show or hide them.</li>
+<li>[ ] Read the help line under each field in the editor: it says what to enter and what the field feeds.</li>
+<li>[ ] Do not press &quot;Delete all examples&quot; until the unit lead says real entry has started (rule 10).</li>
+</ul>
+<h2>Events and hazardous events: the difference</h2>
+<p>The inventory records the <strong>cause</strong> and its <strong>effects</strong> separately. A hazardous event is the weather or sea event itself. An event is one impact it caused at one place. One hazardous event usually causes several events.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Hazardous event (cause)</th>
+<th>Event (effect)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What it is</td>
+<td>The physical event: a storm, a heavy rain spell, a swell episode, a dry spell</td>
+<td>One impact at one place: a landslide on one road, a flood in one street, a road closure</td>
+</tr>
+<tr>
+<td>One row per</td>
+<td>Storm, rain spell, swell episode or dry spell</td>
+<td>Impact per type per place</td>
+</tr>
+<tr>
+<td>Tab</td>
+<td>Hazardous events</td>
+<td>Events</td>
+</tr>
+<tr>
+<td>ID</td>
+<td>HE-YYYY-NNN</td>
+<td>EV-YYYY-NNNN</td>
+</tr>
+<tr>
+<td>What it holds</td>
+<td>Dates, highest 24-hour rainfall, highest wind, highest water level, whether a warning was issued and how early</td>
+<td>Location, size, people affected, buildings, road closure hours, damage and costs, sources, verification</td>
+</tr>
+<tr>
+<td>Link</td>
+<td>Has no link to events itself</td>
+<td>Points to its cause in hazardous_event_id</td>
+</tr>
+</tbody>
+</table>
+<p>Made-up example: two days of heavy rain are one hazardous event, HE-2027-001. It causes a landslide on Windward Road (EV-2027-0001), a road closure from that slide (EV-2027-0002) and street flooding in Scarborough (EV-2027-0003). All three events carry HE-2027-001.</p>
+<p><strong>Why they are kept apart</strong></p>
+<ol>
+<li><strong>Thresholds.</strong> Linking the rainfall to the impacts it caused is how the team works out rainfall thresholds for landslides and floods.</li>
+<li><strong>Counting.</strong> Ten slides from one storm is one storm, not ten. The screening matrix needs both numbers.</li>
+<li><strong>Reporting.</strong> Sendai, DELTA Resilience and the WMO hazardous event catalogue all keep the hazard and its effects apart, so exports to ODPM line up.</li>
+</ol>
+<p><strong>When to add a hazardous event.</strong> Always when an event's trigger is Heavy rainfall, Tropical storm / hurricane or Swell / high waves. Add it for dry spells and other triggers when known. Check the Hazardous events tab first: if the storm or rain spell is already there, reuse its ID. Never make a second hazardous event for the same storm.</p>
+<p><strong>Filling it in.</strong> The <strong>hazard</strong> is the cause, picked from its own list (Heavy rainfall, Tropical storm / hurricane, Swell / high waves, Storm surge, High tide / king tide, Dry spell / drought, Extreme heat, Marine heatwave, Sargassum influx wave, Earthquake, Tsunami, Other). Never pick an effect such as Landslide or Flash flood here; those go on the Events tab. Fill the hazard and start date first: the form won't save without them, because the ID is numbered from the start date. Leave wmo_che_id blank; it is filled from the Met Service IDs tab.</p>
+<h2>Adding an event, step by step</h2>
+<p>Always enter the source first, then the event. An event cannot be saved cleanly without a linked source.</p>
+<ol>
+<li><strong>Find it.</strong> Look in TEMA situation reports, Division of Infrastructure road logs, WASA and Met Service records, newspapers since about 2010, community interviews and your own observations.</li>
+<li><strong>Check it is not already there.</strong> On the Events tab, use the search box and filters to look by date and parish. If it exists, add your new source to that record instead of making a new one. On the Sources tab, Group by event shows which sources each event already has.</li>
+<li><strong>Add the source.</strong> Go to the Sources tab and press <strong>Add source</strong>. Leave source_id blank; it is numbered for you (SRC-NNNN). Fill source type, title and source date. Paste web addresses into link_url, starting with https://. Put where to find it (file, folder, page) in reference_or_url. Put the originating agency's own record numbers in agency_record_ids: a partner's field form number, observation ID or photo numbers, or a TEMA situation report number. These let anyone trace the source back to the original. Set authority, and if the source copies another one (a news story from a TEMA report), fill repeats_source_id.</li>
+<li><strong>Add the event.</strong> Go to the Events tab and press <strong>Add event</strong>. Fill the Essential group first:
+<ol>
+<li>Leave event_id blank. It is numbered from the start date when you save (EV-YYYY-NNNN).</li>
+<li>Set is_example to N, then pick event_type and trigger from the lists.</li>
+<li>Enter date_start (YYYY-MM-DD) and date_precision. If you only know the month, use the 1st and choose Month.</li>
+<li>Pick the parish. Write a location_desc a colleague could find on the ground, such as &quot;Windward Road, 300 m east of the junction&quot;.</li>
+<li>Add easting and northing (UTM 20N, metres) if you have them, and set location_precision honestly. Only GPS or road chainage counts as precise. Fill coords_from with where the coordinates came from: Unit GPS, a field check ID, or the source ID of an agency's geodata.</li>
+<li>Fill at least one impact field (see the next section).</li>
+<li>Set data_origin (who first saw or measured it), verification_status, confidence, recorded_by and recorded_date.</li>
+<li>Tick the source or sources in the Sources list inside the editor. The line above the list shows the linked sources and whether the Desk-verified rule is met. You can also link from a source: open it and use Link to this event.</li>
+</ol>
+</li>
+<li><strong>Save.</strong> If the page says &quot;Saved. Still missing required: …&quot;, go back and fill those fields.</li>
+<li><strong>Add what you know beyond Essential</strong>, such as road_name, closure_hours, people_affected or est_cost_ttd. climate_related fills itself from the trigger; don't type in it.</li>
+</ol>
+<p><strong>Rain, storm or swell?</strong> Find or add the hazardous event on the Hazardous events tab before you save the event, then put its ID in hazardous_event_id. See &quot;Events and hazardous events: the difference&quot; above.</p>
+<p><strong>Sources with maps, coordinates or GIS files.</strong> Anything geospatial goes to the GIS Specialist before it is used anywhere else.</p>
+<ol>
+<li>On the source, set has_geodata to Y and fill geodata_type, geodata_file, original_crs and any sharing_terms.</li>
+<li>Send the file to the GIS Specialist. They store it in the Commons, the team's register of all data held, and you put that link in geodata_link.</li>
+<li>The GIS Specialist converts it to UTM 20N, decides how precise the locations are, loads lines and areas into the GeoPackage, and sets gis_status.</li>
+<li>Only when gis_status reads Checked and loaded to the GeoPackage do you copy coordinates onto events, with coords_from set to that source's ID.</li>
+</ol>
+<p>A whole dataset of many incidents (for example a TEMA GIS layer) also gets a Risk Data Register entry. Restricted data stays in the Commons and the GeoPackage, not on the shared page.</p>
+<p><strong>Reports received on WhatsApp.</strong> The unit has no WhatsApp number, so reports reach staff phones. They are community reports: useful, but treated with care.</p>
+<ol>
+<li><strong>Ask the sender</strong> whether they took the photos themselves, when, and where. Ask for a location pin, and for permission to use the photos and information.</li>
+<li><strong>Save the evidence off your phone.</strong> In the inventory, save the source and use Attach photos: the photos go straight from your phone or computer into the restricted folder, and the reference and file names are filled in for you. Otherwise, save the photos and a short note of the message yourself in the restricted Drive folder <strong>Community reports – restricted</strong> (climate unit only), named with a reference such as WA-20271112-03. Nothing from WhatsApp goes in the Commons. Messages with no impact, or outside Tobago, are not saved.</li>
+<li><strong>Enter one source per sender per event.</strong> Source type: WhatsApp or messaging app. Authority: Not official. Publisher: &quot;Member of the public via WhatsApp&quot;, plus the team role that received it. Never the sender's name or number. Put the WA reference and photo file names in agency_record_ids, and the folder in reference_or_url.</li>
+<li><strong>A forwarded message is a repeat.</strong> Fill repeats_source_id. It is never a new, independent source, and several people forwarding the same photo is still one source.</li>
+<li><strong>A location pin is geodata.</strong> Set has_geodata to Y and send it to the GIS Specialist before the coordinates go on the event. The geodata link points to the restricted folder, not the Commons.</li>
+<li><strong>The event stays Reported</strong> until a second independent source, the mandated agency's record or a field check backs it up.</li>
+</ol>
+<p>Until the team agrees the privacy rules (open question I11), record no names, phone numbers or identifiable faces anywhere in the inventory.</p>
+<p><strong>Using the restricted WhatsApp folder.</strong> The Drive folder <em>Community reports – restricted</em> holds the photos and notes from WhatsApp reports. It is kept apart from the inventory folder and from the Commons.</p>
+<ul>
+<li><strong>Who can open it.</strong> Climate Unit members only. The folder owner (the bagoenvi.research account) shares it in Drive; the inventory never shares it. If you are in the Climate Unit and cannot open it, ask the owner. If a report reaches you and you are not in the Climate Unit (for example in the Coastal Unit), pass it to a Climate Unit member and do not save it yourself.</li>
+<li><strong>Saving with Attach photos.</strong> Save the source first, then open it and press <strong>Attach photos</strong>. Each photo is made smaller, its hidden details (such as the phone's location stamp) are removed, and it is saved with the report's reference and a number, for example WA-20271112-03_01.jpg. The reference and file names are written onto the source for you. Because the location stamp is removed, take the location from the sender's pin. If Attach photos says the folder is not shared with you, ask the owner. Do not save the photos anywhere else in the meantime.</li>
+<li><strong>Saving by hand</strong> (only if you cannot use the inventory). Put the photos in the folder named with the reference and a number, as above. Add a short note of the message as WA-20271112-03_note.txt: the date received, what it shows and where. Never the sender's name or number. Then type the reference and the file names into agency_record_ids on the source.</li>
+<li><strong>Finding a report's photos later.</strong> Open the source in the inventory and use its photo links. You can also search the folder for the reference.</li>
+<li><strong>Keep the folder in order.</strong> Do not rename or move files, because their names are recorded on the source. Do not delete a file that a source links to. Do not share links to the files outside the Climate Unit, copy them to the Commons, or download them to a personal device.</li>
+<li><strong>The copy on your phone.</strong> Whether to delete the photos from your phone and WhatsApp once they are saved, and how long the folder keeps material, are still to be decided (open questions I26 and I27). Until then, save the evidence to the folder promptly and do not forward it to anyone else.</li>
+</ul>
+<p><strong>Never</strong> record names of people affected, private contact details, or guesses presented as facts. Leave a field blank rather than guess, and explain any estimate in notes.</p>
+<h2>Recording impacts, losses and damage</h2>
+<p>Every event needs at least one impact field. The impact totals live on the Events record; the Loss &amp; damage detail tab only breaks them down.</p>
+<p><strong>Impact fields on the event:</strong> people affected, deaths, buildings damaged or destroyed, facilities affected, road closed (with closure hours), damage description, estimated cost.</p>
+<p><strong>No countable impact?</strong> Say so in damage_desc, for example &quot;No impact beyond the hazard: open grassland burned&quot;. This counts as the impact field. Do not put it in notes, or QA will flag the record.</p>
+<p><strong>Physical amounts count even without a cost.</strong> Record metres of road, number of houses or hectares of crop when nobody knows the price.</p>
+<p><strong>Keep damage and losses apart.</strong> Damage is the repair or replacement cost (est_cost_ttd). Losses are income lost and extra costs such as clean-up (est_loss_ttd). Always fill price_year with any TT$ figure.</p>
+<p><strong>Significant events only</strong> get rows on the Loss &amp; damage detail tab. Until the team agrees a definition (open question I4), treat an event as significant if it has any death, any building destroyed, a road closed for more than a day, or any THA spending on response.</p>
+<table>
+<thead>
+<tr>
+<th>Detail table</th>
+<th>Use it for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Human effects</td>
+<td>Deaths, injured, affected, evacuated or relocated, by sex, age group and disability where known</td>
+</tr>
+<tr>
+<td>Damage and losses</td>
+<td>Each asset or service damaged, by sector, with quantity even without cost</td>
+</tr>
+<tr>
+<td>Ecosystem losses</td>
+<td>Reef, seagrass, mangrove or beach visibly damaged</td>
+</tr>
+<tr>
+<td>Non-economic losses</td>
+<td>Loss that cannot be priced (health, heritage, identity); record consent</td>
+</tr>
+<tr>
+<td>Response funding</td>
+<td>Money spent or paid on response and recovery, when figures exist</td>
+</tr>
+</tbody>
+</table>
+<p>Detail rows must never add up to more than the event's totals. QA flags any that do.</p>
+<h2>Setting the verification status</h2>
+<p>verification_status says how far the CRVA team has checked a record. Only Desk-verified, Partner-observed and Field-verified records are used in the CRVA analysis.</p>
+<table>
+<thead>
+<tr>
+<th>Status</th>
+<th>When to use it</th>
+<th>Who sets it</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Reported</td>
+<td>Not yet confirmed: one source that is not from the mandated agency, or only copies of one</td>
+<td>You, at entry</td>
+</tr>
+<tr>
+<td>Desk-verified</td>
+<td>One record from the mandated agency, about a claim within its mandate (table below). Or, for anything else, two independent sources that agree. A source that repeats another never counts as the second.</td>
+<td>You, after desk checking</td>
+</tr>
+<tr>
+<td>Partner-observed</td>
+<td>A partner's own field data, such as the coastal unit's data, located beach photos. The CRVA team has not visited.</td>
+<td>You</td>
+</tr>
+<tr>
+<td>Field-verified</td>
+<td>A CRVA team member visited and confirmed it on form THA-FV-01, with a GPS point and at least two photos</td>
+<td>Set automatically by a confirming field check. You cannot pick it by hand.</td>
+</tr>
+<tr>
+<td>Duplicate</td>
+<td>Entered twice. Fill duplicate_of with the original ID.</td>
+<td>You</td>
+</tr>
+<tr>
+<td>Rejected</td>
+<td>Checked and not supported, for example a field check found nothing. Say why in notes.</td>
+<td>You</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Which agency is authoritative for what.</strong> For claims within its mandate, the agency's record is the record: there is nothing independent to check it against. Set <strong>authority</strong> on the source to &quot;Mandated agency, within its mandate&quot; only when both the agency and the claim match a row below.</p>
+<table>
+<thead>
+<tr>
+<th>Claim</th>
+<th>Authoritative agency</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rainfall, wind, warnings, storm tracks</td>
+<td>Met Service</td>
+</tr>
+<tr>
+<td>Disaster declarations, people affected, shelters, official damage assessments</td>
+<td>TEMA / ODPM</td>
+</tr>
+<tr>
+<td>Road closures and road damage</td>
+<td>Division of Infrastructure</td>
+</tr>
+<tr>
+<td>Water supply outages</td>
+<td>WASA</td>
+</tr>
+<tr>
+<td>Marine heatwaves, coral bleaching, marine disease, sargassum science and offshore monitoring</td>
+<td>IMA</td>
+</tr>
+<tr>
+<td>Beach and coastal monitoring, sargassum stranding flags (TTSMP stoplight)</td>
+<td>Coastal Zone Management Unit</td>
+</tr>
+</tbody>
+</table>
+<p>A TEMA report about rainfall amounts is official, but outside TEMA's mandate: mark it &quot;Other official&quot;. Small events that never reach these agencies stay Reported until a second independent source, partner data or a field check backs them up.</p>
+<p><strong>News stories and posts built from an official record</strong></p>
+<ul>
+<li><strong>You have the original:</strong> cite the original on the event. Add the story as a source only if it adds something new (photos, exact location, residents' accounts), and set repeats_source_id to the original's ID with original_held = Y.</li>
+<li><strong>You don't have the original:</strong> enter the story, set repeats_source_id to the original's reference and original_held = N. It stands in for the original as weaker evidence and does not make the event Desk-verified. Ask the agency for the original.</li>
+<li><strong>Reposts, shares and screenshots</strong> of the same post are one source. Put the extra links in its notes.</li>
+</ul>
+<p><strong>When an official figure and a local account disagree,</strong> put the official figure in the field, record the other account in notes, and set confidence to Medium.</p>
+<p>The event editor shows under its Sources list whether the Desk-verified rule is met, and QA lists Desk-verified events that don't meet it.</p>
+<p><strong>data_origin is a different question.</strong> It records who first saw or measured the event, not how well it is checked. When it is Partner field monitoring, name the partner in origin_agency.</p>
+<p><strong>To record a field check:</strong> open the event and press <strong>Record a field check</strong>, or add a row on the Field checks tab. An outcome of Confirmed or Confirmed with corrections, plus team, date, GPS point and photos, moves the event to Field-verified. Any other outcome leaves the status as it was. The visit's photos are stored in the Commons, where the team tracks its field visits: list their file names in photo_ids and paste the visit's Commons photos link in commons_photos_link. QA lists field checks without that link.</p>
+<p><strong>Never delete a record.</strong> Mark it Duplicate or Rejected and say why (rule 3).</p>
+<h2>Linking causes and triggers</h2>
+<p>Two link fields on the event show what caused it. They let the team test the impact chains and count how often storms cause damage.</p>
+<p><strong>hazardous_event_id: the weather behind it.</strong> Required when the trigger is Heavy rainfall, Tropical storm / hurricane or Swell / high waves. Add the storm, rain event or swell on the Hazardous events tab first (HE-YYYY-NNN), then put its ID on every event it caused.</p>
+<p><strong>parent_event_id: the event that caused this one.</strong> Use it for cascades. Put the original event's ID on the event it led to.</p>
+<p>Made-up example: heavy rain on 12 November 2027 is HE-2027-001. It causes a landslide on Windward Road, EV-2027-0001. The slide closes the road for 18 hours, EV-2027-0002.</p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>hazardous_event_id</th>
+<th>parent_event_id</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EV-2027-0001 Landslide</td>
+<td>HE-2027-001</td>
+<td>(blank)</td>
+</tr>
+<tr>
+<td>EV-2027-0002 Road closure</td>
+<td>HE-2027-001</td>
+<td>EV-2027-0001</td>
+</tr>
+</tbody>
+</table>
+<p>The parent must be a real event, must start on or before its child, and must not be the event itself. QA checks all of this.</p>
+<p><strong>IDs never change.</strong> If you correct a date and the year in the ID no longer matches, leave the ID alone. The mismatch is shown for information only.</p>
+<p><strong>Met Service IDs.</strong> When the Met Service shares its own hazardous event IDs (open question I5), enter each one on the Met Service IDs tab, one row per ID, including events that caused no recorded impacts in Tobago. Set match status, and when it matches one of our hazardous events, pick that HE- ID. Saving copies the Met Service ID onto the hazardous event's wmo_che_id. Our own HE- IDs never change, so existing links stay intact.</p>
+<h2>Checking your work</h2>
+<p>The QA checks panel is on the Overview tab. Every count should read 0, except lines marked &quot;For information&quot;. The top strip shows the total as &quot;QA issues to fix&quot;. Click any ID in the panel to open that record and fix it.</p>
+<table>
+<thead>
+<tr>
+<th>QA flag</th>
+<th>Usual fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Events missing a required field</td>
+<td>Open the record and fill the fields named when you save</td>
+</tr>
+<tr>
+<td>Coordinates missing (precision better than parish)</td>
+<td>Add easting and northing, or set location_precision to Parish only</td>
+</tr>
+<tr>
+<td>Coordinates outside Tobago</td>
+<td>Easting and northing are swapped, or in degrees rather than UTM metres</td>
+</tr>
+<tr>
+<td>Events with no linked source</td>
+<td>Tick a source in the event's Sources list</td>
+</tr>
+<tr>
+<td>Desk-verified events that do not meet the rule</td>
+<td>Link the mandated agency's record or a second independent source, or set the status back to Reported</td>
+</tr>
+<tr>
+<td>Sources marked as repeating themselves</td>
+<td>Correct repeats_source_id</td>
+</tr>
+<tr>
+<td>Sources marked Original held whose original is not entered</td>
+<td>Enter the original as a source, or set original_held to N</td>
+</tr>
+<tr>
+<td>Road closures without closure hours</td>
+<td>Add closure_hours from the road log. If truly unknown, say so in notes and tell the unit lead</td>
+</tr>
+<tr>
+<td>Records with no impact field filled</td>
+<td>Fill an impact field, or write &quot;No impact beyond the hazard: …&quot; in damage_desc</td>
+</tr>
+<tr>
+<td>Rainfall-, storm- or swell-triggered events with no hazardous event</td>
+<td>Add the Hazardous events row and put its ID on the event</td>
+</tr>
+<tr>
+<td>Partner field monitoring without the partner named</td>
+<td>Fill origin_agency</td>
+</tr>
+<tr>
+<td>Duplicates without duplicate_of</td>
+<td>Add the original event's ID</td>
+</tr>
+<tr>
+<td>Cause links (not found, self, loop, parent later)</td>
+<td>Correct parent_event_id</td>
+</tr>
+<tr>
+<td>Met Service IDs linked to a missing hazardous event, or not matching it</td>
+<td>Correct the HE- ID on the Met Service IDs row and save it again</td>
+</tr>
+<tr>
+<td>Detail rows adding up to more than the event total</td>
+<td>Fix the detail rows or the event total so they agree</td>
+</tr>
+</tbody>
+</table>
+<p>QA also lists <strong>Partner field monitoring sources without the partner's record IDs</strong>. Ask the partner for the form, observation or photo numbers and add them in agency_record_ids.</p>
+<p>QA also lists <strong>sources with geodata not yet checked and loaded by the GIS Specialist</strong>, <strong>events with coordinates but no coords_from</strong>, and <strong>events whose coordinates come from a source not yet loaded</strong>. Send the first to the GIS Specialist; fill coords_from on the second; for the third, wait for the GIS Specialist or remove the coordinates for now.</p>
+<p><strong>Cross-referencing sources.</strong> On the Sources tab, switch from List to <strong>Group by event</strong> to see each event with its sources underneath, which ones repeat others, and whether the Desk-verified rule is met. <strong>Group by hazardous event</strong> shows every source about one storm across all the places it hit. Sources not linked to anything collect at the bottom for follow-up. Opening a source shows the events that cite it and the other sources on each. The <strong>Evidence behind each event</strong> chart on Overview shows the most reliable source behind each group of events.</p>
+<p><strong>Every week</strong></p>
+<ul>
+<li>[ ] Open Overview and bring every QA count to 0.</li>
+<li>[ ] Tell the GIS Specialist the records are clean. They load verified records into the GeoPackage and report location problems back.</li>
+<li>[ ] Move records up the ladder where the Desk-verified rule is now met. QA lists Reported events that already meet it.</li>
+</ul>
+<h2>Downloads, common mistakes and help</h2>
+<p><strong>Downloads.</strong> &quot;Download all (Excel)&quot; saves every tab as a workbook for offline review or sharing with partners. &quot;Download this tab (CSV)&quot; saves only the tab you are on. Make changes on the live page, not in a downloaded copy, so everyone works from one record.</p>
+<p><strong>Sargassum.</strong> Record a stranding only if the Coastal Zone Management Unit flags it Yellow or Red, or Green with a reported impact. Fill sargassum_flag and stranding_ref, cite the coastal unit's record as the source, and send the event ID back to them.</p>
+<p><strong>Common mistakes</strong></p>
+<ul>
+<li>Entering the event before its source, then forgetting to link them.</li>
+<li>Marking a record Desk-verified when the second source just repeats the first, or when the only official record is outside that agency's mandate.</li>
+<li>Treating a partner's photos as Field-verified. They are Partner-observed.</li>
+<li>Writing &quot;no impact&quot; in notes instead of damage_desc.</li>
+<li>Counting forwarded WhatsApp messages as separate sources, or leaving WhatsApp photos only on a personal phone.</li>
+<li>Giving a village-level location the precision of a GPS point.</li>
+<li>Leaving out road closure hours. They drive the isolation impact chain (IC1).</li>
+<li>Retyping an event ID after a date correction. IDs never change.</li>
+</ul>
+<p><strong>Where to get help</strong></p>
+<ul>
+<li>What the design is based on and why it is built this way: Sources and justification</li>
+<li>Full rules and examples: <a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/instruction-manual.html">Objectives and Instruction Manual</a>.</li>
+<li>Location and coordinate questions: the GIS Specialist.</li>
+<li>Questions the rules don't answer: raise them with the unit lead, who adds them to the <a href="https://bagoenvi-netizen.github.io/bago-enviro-event-inventory/docs/questions-log.html">CRVA Open Questions Log</a>. Still open: what counts as significant (I4), the interim hazardous event ID scheme (I5) and privacy rules (I11).</li>
+</ul>
+
+</main>
+<footer>Hosted with the Tobago Event Inventory &middot; updated October 2026 &middot;
+to change this page, edit its source in the inventory repo&rsquo;s <code>docs/</code> folder</footer>
+</div>
+</body>
+</html>
