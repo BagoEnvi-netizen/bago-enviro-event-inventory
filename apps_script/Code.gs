@@ -901,6 +901,7 @@ function adminView_(me) {
   const members = readAll_('Members').map(function (m) {
     const e = lc_(m.email);
     return { email: e, name: String(m.name || ''), role: lc_(m.role) || 'editor', team: String(m.team || ''), position: String(m.position || ''),
+      pin: String(m.pin || ''),   // admins only: shown masked in the Admin tab (Show/Copy)
       removed_at: String(m.removed_at || ''), removed_by: String(m.removed_by || ''), last_seen: seen[e] || '', owner: e === owner, me: e === me.email };
   });
   const peopleOf = function (id) {

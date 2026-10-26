@@ -857,6 +857,7 @@ async function loadAdmin() {
 function adminDone(res, okText) {
   ADMIN = res.view || res; ACT = null; ADMIN_ALERTS = ADMIN.requests.filter(r => r.status === "Pending").length;
   adminMsg = { ok: okText, warn: (res.warnings || []) }; adminForm = null; renderTabs(); renderAdmin();
+  const c = document.querySelector(".callout"); if (c) c.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 function renderAdmin() {
   if (!ADMIN) return loadAdmin();
@@ -893,8 +894,9 @@ function renderAdmin() {
   const memCard = `<div class="card"><div class="panelhead" style="margin-bottom:8px"><div><h2>Members</h2>
       <p class="note" style="margin:0">${active.length} active. Admins: ${active.filter(m => m.role === "admin").map(m => esc(m.name || m.email)).join(", ")}. Agreed for this build: the Director plus one other, as well as the host account.${nonHostAdmins > 2 ? ` <span class="flag">More admins than agreed.</span>` : ""}</p></div>
       <div class="actions"><button class="btn primary" id="addMem">Add member</button></div></div>
-    <div class="tablebox"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Team</th><th>Position</th><th>Last visit</th><th>Inventory folder</th><th></th></tr></thead><tbody>
+    <div class="tablebox"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Team</th><th>Position</th><th>Last visit</th><th>Inventory folder</th><th>PIN</th><th></th></tr></thead><tbody>
     ${active.map(m => `<tr><td>${esc(m.name)}</td><td class="mono">${esc(m.email)}</td><td>${roleTag(m)}</td><td>${esc(m.team || "—")}</td><td>${esc(m.position || "")}</td><td class="mono">${esc(m.last_seen || "—")}</td><td>${folderCell(m)}</td>
+      <td class="mono" style="white-space:nowrap">${m.pin ? `<span data-pinv="${esc(m.pin)}">&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;</span> <button class="idbtn" data-pinshow="${esc(m.email)}">Show</button> <button class="idbtn" data-pincopy="${esc(m.pin)}">Copy</button>` : "&#8212;"}</td>
       <td style="white-space:nowrap"><button class="idbtn" data-edit="${esc(m.email)}">Change</button>${m.owner || m.me ? "" : ` <button class="idbtn" data-remove="${esc(m.email)}">Remove</button>`}</td></tr>`).join("")}</tbody></table></div>
     ${removed.length ? `<details class="grp" style="margin-top:10px"><summary>Removed members (${removed.length})<span class="hint">Kept so names on old records still make sense</span></summary><div style="padding:10px 14px"><ul class="plain">${removed.map(m => `<li><b>${esc(m.name)}</b> <span class="mono">${esc(m.email)}</span> · removed ${esc(fmtDay(m.removed_at))} by ${esc(m.removed_by)} <button class="idbtn" data-readd="${esc(m.email)}">Add back…</button></li>`).join("")}</ul></div></details>` : ""}
     ${(() => { const extra = Object.keys(fp).filter(e => !byEmail[e] || byEmail[e].role === "removed").filter(e => fp[e] !== "Owner"); return extra.length ? `<p class="note" style="margin:10px 0 0"><span class="flag">Has folder access but is not an active member:</span> ${extra.map(e => `<span class="mono">${esc(e)}</span> (${esc(fp[e])})`).join(", ")}. Add them here, or remove their access in Drive.</p>` : ""; })()}
@@ -942,6 +944,8 @@ function wireAdmin() {
     const m = find(b.dataset.remove); b.disabled = true;
     try { adminDone(await gs("removeMember", m.email), (m.name || m.email) + " removed. Their access to the inventory folder has been taken away."); } catch (e) { b.disabled = false; alertMsg(e); }
   });
+  on("[data-pinshow]", b => { const s = b.parentElement.querySelector("[data-pinv]"); if (!s) return; const show = s.textContent.indexOf("\u2022") >= 0; s.textContent = show ? s.dataset.pinv : "\u2022\u2022\u2022\u2022\u2022\u2022"; b.textContent = show ? "Hide" : "Show"; });
+  on("[data-pincopy]", async b => { try { await navigator.clipboard.writeText(b.dataset.pincopy); b.textContent = "Copied"; setTimeout(() => { b.textContent = "Copy"; }, 1500); } catch (e) { window.prompt("Copy the PIN:", b.dataset.pincopy); } });
   on("[data-recover]", async b => { const [k, id] = b.dataset.recover.split("|"); b.disabled = true;
     try { const r = await gs("recoverRecord", k, id); applyData(r.data); adminDone(r.view, id + " recovered."); } catch (e) { b.disabled = false; alertMsg(e); } });
   if ($("#s_save")) $("#s_save").onclick = async () => {
